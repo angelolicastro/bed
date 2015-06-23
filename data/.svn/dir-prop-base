@@ -1,0 +1,20 @@
+K 10
+svn:ignore
+V 205
+*.gz
+a.ev
+big.ev
+bstout.ev
+clas12_torus_fieldmap.dat
+dvcs_10_2000.ev
+dvcs_2_500.ev
+dvcs_5_500.ev
+eviodict.xml.bak
+out.ev
+proton_testreco.ev
+sptorus_map.dat
+sptorus_map_binary.dat
+swimming.ev
+testfile.evio
+
+END
