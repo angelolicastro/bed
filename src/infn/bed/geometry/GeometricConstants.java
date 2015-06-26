@@ -15,9 +15,9 @@ public class GeometricConstants {
 	public static final int BARS = 9;
 	
 	/**
-	 * The number of crystal vetoes.
+	 * The number of crystals.
 	 */
-	public static final int CRYSTAL_VETOES = 1;
+	public static final int CRYSTALS = 1;
 	
 	/**
 	 * The number of internal vetoes.
@@ -32,6 +32,6 @@ public class GeometricConstants {
 	/**
 	 * The total number of vetoes.
 	 */
-	public static final int VETOES = CRYSTAL_VETOES + INTERNAL_VETOES + EXTERNAL_VETOES;
+	public static final int VETOES = CRYSTALS + INTERNAL_VETOES + EXTERNAL_VETOES;
 
 }

@@ -62,6 +62,10 @@ import infn.bed.item.FullSideViewVeto;
  * 31. External Right<br>
  * </p>
  * 
+ * <p>
+ * NOTE: While the crystal is not a veto, it is classified as a veto for brevity and consistency.
+ * </p>
+ * 
  * @author Andy Beiter
  * @author Angelo Licastro
  */
@@ -84,7 +88,7 @@ public class FullSideView extends BedView {
 	private Styled _barStyle;
 
 	/**
-	 * Used for the pre-draw phase of rectangles.
+	 * Used for the before draw phase of rectangles.
 	 */
 	private IDrawable _beforeDraw;
 
@@ -206,7 +210,7 @@ public class FullSideView extends BedView {
 		 */
 		
 		/*
-		 * Crystal Veto
+		 * Crystal
 		 */
 		
 		// Crystal
