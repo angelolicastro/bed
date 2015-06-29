@@ -3,6 +3,7 @@ package infn.bed.item;
 import infn.bed.view.BarSideView;
 import infn.bed.event.ChargeTimeData;
 import infn.bed.event.EventManager;
+import infn.bed.math.MathematicalConstants;
 import infn.bed.view.BedView;
 
 import java.awt.Color;
@@ -146,7 +147,7 @@ public class SideViewBar extends RectangleItem {
 	/**
 	 * Upper energy level (MeV) for color scaling
 	 */
-	private static final float upperEnergyScale = 50f;
+	private static final float upperEnergyScale = MathematicalConstants.UPPER_ENERGY_LIMIT;
 
 	/**
 	 * The rectangle the bar is drawn in
