@@ -5,6 +5,8 @@ import infn.bed.view.BedView;
 import infn.bed.event.AccumulationManager;
 import infn.bed.event.ChargeTimeData;
 import infn.bed.event.EventManager;
+import infn.bed.math.MathematicalConstants;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -154,7 +156,7 @@ public class FrontViewBar extends RectangleItem {
 	/**
 	 * Upper energy level (MeV) for color scaling
 	 */
-	private static final float upperEnergyScale = 50f;
+	private static final float upperEnergyScale = MathematicalConstants.UPPER_ENERGY_LIMIT;
 
 	/**
 	 * The rectangle the bar is drawn in
