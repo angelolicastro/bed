@@ -88,12 +88,12 @@ public class CalibrationFileParser {
 	 * 
 	 * Note: The constructor must call _parseConfigurationFile().
 	 * 
-	 * @param filename The name of the file to parse.
+	 * @param file The file to parse.
 	 * @param item The item name (b for scintillator bar or v for veto).
 	 * @param id The identification number of the item.
 	 */
-	public CalibrationFileParser(String filename, String item, int id) {
-		file = new File(filename);
+	public CalibrationFileParser(File file, String item, int id) {
+		this.file = file;
 		this.item = item;
 		this.id = id;
 		_parseConfigurationFile();
