@@ -1,10 +1,11 @@
 package infn.bed.item;
 
-import infn.bed.view.FullSideView;
 import infn.bed.event.ChargeTimeData;
 import infn.bed.event.EventManager;
 import infn.bed.math.MathematicalConstants;
+import infn.bed.util.CalibrationFileParser;
 import infn.bed.view.BedView;
+import infn.bed.view.FullSideView;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -12,11 +13,7 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.List;
 
 import cnuphys.bCNU.event.EventControl;
@@ -24,8 +21,6 @@ import cnuphys.bCNU.graphics.container.IContainer;
 import cnuphys.bCNU.graphics.world.WorldGraphicsUtilities;
 import cnuphys.bCNU.item.RectangleItem;
 import cnuphys.bCNU.layer.LogicalLayer;
-import cnuphys.bCNU.log.Log;
-import cnuphys.bCNU.util.FileUtilities;
 import cnuphys.bCNU.util.Fonts;
 
 /**
@@ -34,7 +29,7 @@ import cnuphys.bCNU.util.Fonts;
  * hit. It displays energy-time information for each veto in the info panel.
  * 
  * @author Andy Beiter
- * 
+ * @author Angelo Licastro
  */
 public class FullSideViewVeto extends RectangleItem {
 
@@ -101,12 +96,12 @@ public class FullSideViewVeto extends RectangleItem {
 	/**
 	 * The charge-to-energy conversion factor for the primary PMT for the veto
 	 */
-	private double A_left;
+	private double a_left;
 
 	/**
 	 * The charge-to-energy conversion factor for the secondary PMT for the veto
 	 */
-	private double A_right;
+	private double a_right;
 
 	/**
 	 * The attenuation length
@@ -116,27 +111,27 @@ public class FullSideViewVeto extends RectangleItem {
 	/**
 	 * Time delay for the primary PMT
 	 */
-	private double delta_left;
+	private double delta_L;
 
 	/**
 	 * Time delay for the secondary PMT
 	 */
-	private double delta_right;
+	private double delta_R;
 
 	/**
 	 * The tdc-to-time conversion factor for the primary PMT for the veto
 	 */
-	private double tdcConvLeft;
+	private double t_left;
 
 	/**
 	 * The tdc-to-time conversion factor for the secondary PMT for the veto
 	 */
-	private double tdcConvRight;
+	private double t_right;
 
 	/**
 	 * The length of the veto
 	 */
-	private double length;
+	private double l;
 
 	/**
 	 * The view this veto is in
@@ -186,52 +181,16 @@ public class FullSideViewVeto extends RectangleItem {
 	 * Gets the calibration constants from a file and stores them
 	 */
 	public void getConstants(File file) {
-
-		if ((file != null) && file.exists()) {
-			Log.getInstance().info(
-					"Veto calibration constants file found: " + file.getPath());
-			try {
-				FileReader fileReader = new FileReader(file);
-				BufferedReader bufferedReader = new BufferedReader(fileReader);
-				boolean notFound = true;
-				String vetoTag = "v" + _veto;
-				while (notFound) {
-					String s = bufferedReader.readLine();
-					if (s == null) {
-						break;
-					} else {
-						if (!s.startsWith("#") && (s.length() > 0)) {
-							String tokens[] = FileUtilities.tokens(s);
-							if ((tokens[0]).equals(vetoTag)) {
-								notFound = false;
-								v_eff = Double.parseDouble(tokens[1]);
-								A_left = Double.parseDouble(tokens[2]);
-								A_right = Double.parseDouble(tokens[3]);
-								lambda = Double.parseDouble(tokens[4]);
-								delta_left = Double.parseDouble(tokens[5]);
-								delta_right = Double.parseDouble(tokens[6]);
-								tdcConvLeft = Double.parseDouble(tokens[7]);
-								tdcConvRight = Double.parseDouble(tokens[8]);
-								length = Double.parseDouble(tokens[9]);
-							}
-						}
-					}
-				}
-				bufferedReader.close();
-			} catch (FileNotFoundException e) {
-				Log.getInstance().exception(e);
-				e.printStackTrace();
-			} catch (IOException e) {
-				Log.getInstance().exception(e);
-				e.printStackTrace();
-			}
-			Log.getInstance().info(
-					"Successfully read in calibration constants.");
-		} else {
-			Log.getInstance().warning(
-					"Calibration constants file not found at: "
-							+ ((file == null) ? "???" : file.getPath()));
-		}
+		CalibrationFileParser calibrationFileParser = new CalibrationFileParser(file, "v", _veto);
+		v_eff = calibrationFileParser.getEffectiveVelocity();
+		a_left = calibrationFileParser.getLeftADCConversionFactor();
+		a_right = calibrationFileParser.getRightADCConversionFactor();
+		lambda = calibrationFileParser.getAttenuationLength();
+		delta_L = calibrationFileParser.getLeftShift();
+		delta_R = calibrationFileParser.getRightShift();
+		t_left = calibrationFileParser.getLeftTDCConversionFactor();
+		t_right = calibrationFileParser.getRightTDCConversionFactor();
+		l = calibrationFileParser.getItemLength();
 	}
 
 	/**
@@ -344,40 +303,40 @@ public class FullSideViewVeto extends RectangleItem {
 			double t_l[] = new double[time1.length];
 			double t_r[] = new double[time2.length];
 			for (int i = 0; i < time1.length; i++) {
-				t_l[i] = (time1[i] * 1.0 / tdcConvLeft) - delta_left;
+				t_l[i] = (time1[i] * 1.0 / t_left) - delta_L;
 			}
 			for (int i = 0; i < time2.length; i++) {
-				t_r[i] = (time2[i] * 1.0 / tdcConvRight) - delta_right;
+				t_r[i] = (time2[i] * 1.0 / t_right) - delta_R;
 			}
 			double posFromLeft[] = new double[charge1.length];
 			for (int i = 0; i < posFromLeft.length; i++) {
-				posFromLeft[i] = (v_eff * (t_l[i] - t_r[i]) + length) / 2.0;
+				posFromLeft[i] = (v_eff * (t_l[i] - t_r[i]) + l) / 2.0;
 			}
 			double e_l[] = new double[charge1.length];
 			double e_r[] = new double[charge2.length];
 			for (int i = 0; i < e_l.length; i++) {
-				e_l[i] = charge1[i] * A_left;
+				e_l[i] = charge1[i] * a_left;
 			}
 			for (int i = 0; i < e_r.length; i++) {
-				e_r[i] = charge2[i] * A_right;
+				e_r[i] = charge2[i] * a_right;
 			}
 			totalE = new double[e_l.length];
 			totalT = new double[t_l.length];
 			for (int i = 0; i < totalE.length; i++) {
 				double e_l_prime = e_l[i] * Math.exp(posFromLeft[i] / lambda);
 				double e_r_prime = e_r[i]
-						* Math.exp((length - posFromLeft[i]) / lambda);
+						* Math.exp((l - posFromLeft[i]) / lambda);
 				totalE[i] = (e_l_prime + e_r_prime) / 2;
-				totalT[i] = (t_l[i] + t_r[i] - (length / v_eff)) / 2.0;
+				totalT[i] = (t_l[i] + t_r[i] - (l / v_eff)) / 2.0;
 			}
 		} else { // internal vetoes and remaining external vetoes
 			totalE = new double[charge1.length];
 			totalT = new double[time1.length];
 			for (int i = 0; i < totalT.length; i++) {
-				totalT[i] = time1[i] * 1.0 / tdcConvLeft;
+				totalT[i] = time1[i] * 1.0 / t_left;
 			}
 			for (int i = 0; i < totalE.length; i++) {
-				totalE[i] = charge1[i] * A_left;
+				totalE[i] = charge1[i] * a_left;
 			}
 		}
 	}
