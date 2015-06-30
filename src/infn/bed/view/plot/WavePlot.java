@@ -14,94 +14,86 @@ import cnuphys.splot.plot.VerticalLine;
 import cnuphys.splot.style.SymbolType;
 
 /**
- * This class is used to plot waveforms (TDC vs. ADC).
+ * Plots ADC (analog-to-digital converter) and TDC (time-to-digital converter) waveforms.
  * 
  * @author Andy Beiter
+ * @author Angelo Licastro
  */
 @SuppressWarnings("serial")
 public class WavePlot extends PlotView {
 
 	/**
-	 * Constructor.
+	 * The constructor.
 	 */
 	public WavePlot() {
 		super();
 	}
 
 	/**
-	 * Gets the column names for the data.
+	 * Returns the column names for the plot.
 	 * 
-	 * @return An array of the column names.
+	 * @return names An array of column names for the plot.
 	 */
 	public static String[] getColumnNames() {
-		String names[] = { "X", "Y" };
-		return names;
+		return new String[]{"X", "Y"};
 	}
 
 	/**
-	 * Returns the y-axis label
+	 * Returns the y-axis label for the plot.
 	 * 
-	 * @return "ADC Data" - the label for the y-axis
+	 * @return The y-axis label for the plot.
 	 */
-	protected String getYAxisLabel() {
-		return "ADC Data";
+	private String getYAxisLabel() {
+		return "ADC";
 	}
 
 	/**
-	 * Returns the x-axis label
+	 * Returns the x-axis label for the plot.
 	 * 
-	 * @return "TDC Data" - the label for the x-axis
+	 * @return The x-axis label for the plot.
 	 */
-	protected String getXAxisLabel() {
-		return "TDC Data";
+	private String getXAxisLabel() {
+		return "TDC";
 	}
 
 	/**
-	 * Sets up the plot info (axis labels, plot title, plot point
-	 * characteristics) and correctly chooses the plot title using the isLeft
-	 * parameter.
+	 * Sets the preferences for the plot.
 	 * 
-	 * @param isLeft
-	 *            True if the left PMT samples, false if right PMT samples
+	 * @param isLeft true if the left PMT (photomultiplier tube) is sampling, false otherwise.
 	 */
 	private void setPreferences(boolean isLeft) {
 		Color fillColor = new Color(255, 0, 0, 96);
-		DataSet ds = _plotCanvas.getDataSet();
-		Collection<DataColumn> ycols = ds.getAllColumnsByType(DataColumnType.Y);
-
-		for (DataColumn dc : ycols) {
-			dc.getFit().setFitType(FitType.CONNECT);
-			dc.getStyle().setSymbolType(SymbolType.CIRCLE);
-			dc.getStyle().setSymbolSize(4);
-			dc.getStyle().setFillColor(fillColor);
-			dc.getStyle().setLineColor(Color.black);
+		DataSet dataSet = _plotCanvas.getDataSet();
+		Collection<DataColumn> yDataColumns = dataSet.getAllColumnsByType(DataColumnType.Y);
+		for (DataColumn dataColumn : yDataColumns) {
+			dataColumn.getFit().setFitType(FitType.CONNECT);
+			dataColumn.getStyle().setSymbolType(SymbolType.CIRCLE);
+			dataColumn.getStyle().setSymbolSize(4);
+			dataColumn.getStyle().setFillColor(fillColor);
+			dataColumn.getStyle().setLineColor(Color.black);
 		}
-		_plotCanvas.setName("hi");
-		// many options controlled via plot parameters
-		PlotParameters params = _plotCanvas.getParameters();
-		params.mustIncludeXZero(true);
-		params.mustIncludeYZero(true);
-		params.addPlotLine(new HorizontalLine(_plotCanvas, 0));
-		params.addPlotLine(new VerticalLine(_plotCanvas, 0));
-		params.setXLabel(getXAxisLabel());
-		params.setYLabel(getYAxisLabel());
+		PlotParameters plotParameters = _plotCanvas.getParameters();
+		plotParameters.mustIncludeXZero(true);
+		plotParameters.mustIncludeYZero(true);
+		plotParameters.addPlotLine(new HorizontalLine(_plotCanvas, 0));
+		plotParameters.addPlotLine(new VerticalLine(_plotCanvas, 0));
+		plotParameters.setXLabel(getXAxisLabel());
+		plotParameters.setYLabel(getYAxisLabel());
 		if (isLeft) {
-			params.setPlotTitle("ADC Left");
+			plotParameters.setPlotTitle("ADC Left");
 		} else {
-			params.setPlotTitle("ADC Right");
+			plotParameters.setPlotTitle("ADC Right");
 		}
 	}
 
 	/**
-	 * Sets the data for the plot and sets up the preferences.
+	 * Sets the data set for the plot and calls setPreferences().
 	 * 
-	 * @param ds
-	 *            The data set to be used for the plot
-	 * @param isLeft
-	 *            True if the left PMT samples, false if right PMT samples
+	 * @param dataSet The data set for the plot.
+	 * @param isLeft true if the left PMT (photomultiplier tube) is sampling, false otherwise.
 	 */
-	public void addData(DataSet ds, boolean isLeft) {
-		this._plotCanvas.setDataSet(ds);
+	public void addData(DataSet dataSet, boolean isLeft) {
+		this._plotCanvas.setDataSet(dataSet);
 		setPreferences(isLeft);
 	}
 
