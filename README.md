@@ -1,2 +1,2 @@
 # bed
-A particle detector event display for a Beam Dump eXperiment (BED) at Jefferson Lab.
+A particle detector event display for a Beam Dump eXperiment (BDX) at Jefferson Lab.
