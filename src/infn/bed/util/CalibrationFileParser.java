@@ -2,7 +2,6 @@ package infn.bed.util;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -16,7 +15,7 @@ public class CalibrationFileParser {
 	/**
 	 * An instance of the File object.
 	 */
-	private File file;
+	private final File file;
 	
 	/**
 	 * The item (scintillator bar or veto).
@@ -26,17 +25,17 @@ public class CalibrationFileParser {
 	/**
 	 * The item (scintillator bar or veto) identification number.
 	 */
-	private int id;
+	private final int id;
 	
 	/**
 	 * The comment initializer.
 	 */
-	private String comment = Character.toString((char)35);
+	private final String comment = Character.toString((char)35);
 	
 	/**
 	 * The token delimiter.
 	 */
-	private String delimiter = Character.toString((char)32);
+	private final String delimiter = Character.toString((char)32);
 	
 	/**
 	 * The effective velocity.
@@ -136,8 +135,6 @@ public class CalibrationFileParser {
 						}
 					}
 				}
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
