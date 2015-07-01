@@ -1,9 +1,12 @@
 package infn.bed.util;
 
+import infn.bed.geometry.GeometricConstants;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Parses a calibration file.
@@ -20,12 +23,17 @@ public class CalibrationFileParser {
 	/**
 	 * The item (scintillator bar or veto).
 	 */
-	private String item;
+	private final String item;
 	
 	/**
 	 * The item (scintillator bar or veto) identification number.
 	 */
 	private final int id;
+	
+	/**
+	 * An ArrayList of item (scintillator bar or veto) tags.
+	 */
+	private final ArrayList<String> validationArrayList = new ArrayList<>();
 	
 	/**
 	 * The comment initializer.
@@ -85,23 +93,75 @@ public class CalibrationFileParser {
 	/**
 	 * The constructor.
 	 * 
-	 * Note: The constructor must call _parseConfigurationFile().
+	 * <p>
+	 * NOTE: The constructor must call _parseConfigurationFile(). Additionally, validation is not intrinsic to _parseConfigurationFile().
+	 * </p>
 	 * 
 	 * @param file The file to parse.
 	 * @param item The item name (b for scintillator bar or v for veto).
 	 * @param id The identification number of the item.
+	 * @throws InvalidCalibrationFileException If _isValidCalibrationFile() returns false, an unchecked exception is thrown.
 	 */
 	public CalibrationFileParser(File file, String item, int id) {
 		this.file = file;
 		this.item = item;
 		this.id = id;
-		_parseConfigurationFile();
+		_populateValidationArray();
+		if (_isValidCalibrationFile()) {
+			_parseCalibrationFile();
+		} else {
+			throw new InvalidCalibrationFileException();
+		}
+	}
+	
+	/**
+	 * Populates validationArrayList for use in _isValidCalibrationFile().
+	 */
+	private void _populateValidationArray() {
+		for (int i = 1; i < GeometricConstants.BARS + 1; i++) {
+			validationArrayList.add("b" + i);
+		}
+		for (int i = 1; i < GeometricConstants.CRYSTALS + 1; i++) {
+			validationArrayList.add("v" + i);
+		}
+		for (int i = 1 + GeometricConstants.CRYSTALS; i < GeometricConstants.VETOES + 1; i++) {
+			validationArrayList.add("v" + i);
+		}
+	}
+	
+	/**
+	 * Validates the calibration file.
+	 * 
+	 * @return true if the calibration file is valid, false otherwise.
+	 */
+	private boolean _isValidCalibrationFile() {
+		try {
+			FileReader fileReader = new FileReader(file);
+			BufferedReader bufferedReader = new BufferedReader(fileReader);
+			int i = 0;
+			while (i < validationArrayList.size()) {
+				String s = bufferedReader.readLine();
+				String tag = s.split(delimiter)[0];
+				if (!s.startsWith(comment) && s.length() > 0) {
+					if (!(validationArrayList.get(i).equals(tag))) {
+						return false;
+					}
+					i++;
+				}
+			}
+			bufferedReader.close();
+		} catch (NullPointerException e) {
+			throw new InvalidCalibrationFileException();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return true;
 	}
 	
 	/**
 	 * Parses the calibration file.
 	 */
-	private void _parseConfigurationFile() {
+	private void _parseCalibrationFile() {
 		if (file == null || !file.exists()) {
 			// Oops. Something went wrong.
 		} else {
@@ -115,9 +175,7 @@ public class CalibrationFileParser {
 					if (s == null) {
 						break;
 					} else {
-						// Is the line a comment?
 						if (!s.startsWith(comment) && s.length() > 0) {
-							// Tokenize the line.
 							String[] tokens = s.split(delimiter);
 							if (tokens[0].equals(tag)) {
 								found = true;
