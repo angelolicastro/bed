@@ -19,11 +19,11 @@ public class GetVetoLayer {
 	 * If the veto is an external veto, then 3 is returned.
 	 * If the veto does not exist, then -1 is returned.
 	 */
-	public int getVetoLayer(int veto) {
+	public static int getVetoLayer(int veto) {
 		if (veto > 0 && veto <= GeometricConstants.VETOES) {
 			if (veto <= GeometricConstants.CRYSTALS) {
 				return 1;
-			} else if (veto <= GeometricConstants.INTERNAL_VETOES) {
+			} else if (veto <= GeometricConstants.INTERNAL_VETOES + 1) {
 				return 2;
 			} else if (veto <= GeometricConstants.VETOES) {
 				return 3;
