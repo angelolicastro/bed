@@ -230,17 +230,12 @@ public class BarFrontView extends BedView {
 	/**
 	 * Gets which bar the point is contained in.
 	 * 
-	 * @param container
-	 *            the base container for the view.
-	 * @param screenPoint
-	 *            the pixel point
 	 * @param worldPoint
 	 *            the corresponding world location.
 	 * @return the bar (1-9) or -1 for none.
 	 */
 	@Override
-	public int getSector(IContainer container, Point screenPoint,
-			Double worldPoint) {
+	public int getSector(Point2D.Double worldPoint) {
 		for (int bar = 0; bar < GeometricConstants.BARS; bar++) {
 			if (_barWorldRects[bar].contains(worldPoint)) {
 				return bar + 1; // convert to 1-based index
