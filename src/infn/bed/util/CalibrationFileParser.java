@@ -130,6 +130,16 @@ public class CalibrationFileParser {
 	}
 	
 	/**
+	 * Formats a string by trimming excessive whitespace.
+	 * 
+	 * @param s The string to be formatted.
+	 * @return The formatted string.
+	 */
+	private String _format(String s) {
+		return s.replaceAll("\\s+", Character.toString((char)32)).trim();
+	}
+	
+	/**
 	 * Validates the calibration file.
 	 * 
 	 * @return true if the calibration file is valid, false otherwise.
@@ -141,8 +151,8 @@ public class CalibrationFileParser {
 			int i = 0;
 			while (i < validationArrayList.size()) {
 				String s = bufferedReader.readLine();
-				String tag = s.split(delimiter)[0];
 				if (!s.startsWith(comment) && s.length() > 0) {
+					String tag = _format(s).split(delimiter)[0];
 					if (!(validationArrayList.get(i).equals(tag))) {
 						return false;
 					}
@@ -176,7 +186,7 @@ public class CalibrationFileParser {
 						break;
 					} else {
 						if (!s.startsWith(comment) && s.length() > 0) {
-							String[] tokens = s.split(delimiter);
+							String[] tokens = _format(s).split(delimiter);
 							if (tokens[0].equals(tag)) {
 								found = true;
 								v_eff = Double.parseDouble(tokens[1]);
