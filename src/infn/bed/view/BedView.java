@@ -186,19 +186,12 @@ public abstract class BedView extends EventDisplayView {
 	}
 
 	/**
-	 * Every view should be able to say what sector the current point location
-	 * represents.
+	 * Returns the sector that contains a point.
 	 * 
-	 * @param container
-	 *            the base container for the view.
-	 * @param screenPoint
-	 *            the pixel point
-	 * @param worldPoint
-	 *            the corresponding world location.
-	 * @return the sector [1..6] or -1 for none.
+	 * @param worldPoint A point in the corresponding world.
+	 * @return The sector that contains the point, if any.
 	 */
-	public abstract int getSector(IContainer container, Point screenPoint,
-			Point2D.Double worldPoint); // TODO EDIT NAME
+	public abstract int getSector(Point2D.Double worldPoint);
 
 	/**
 	 * Some common feedback. Subclasses should override and then call
@@ -219,7 +212,7 @@ public abstract class BedView extends EventDisplayView {
 				feedbackStrings);
 
 		// get the sector
-		int sector = getSector(container, screenPoint, worldPoint);
+		int sector = getSector(worldPoint);
 		if (sector > 0) {
 			feedbackStrings.add("Bar " + sector);
 		}
