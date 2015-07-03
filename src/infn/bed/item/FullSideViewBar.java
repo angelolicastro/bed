@@ -438,9 +438,8 @@ public class FullSideViewBar extends RectangleItem {
 	public void getFeedbackStrings(IContainer container, Point screenPoint,
 			Point2D.Double worldPoint, List<String> feedbackStrings) {
 		if (_worldRectangle.contains(worldPoint)) {
-			// double gap = worldRect.width / 48;
-			// double boxWidth = worldRect.width / 12 - 2 * gap;
-			// double boxHeight = worldRect.height / 12 - 2 * gap;
+			String feedbackString = "Scintillator Bar: " + _bar;
+			feedbackStrings.add(feedbackString);
 			double x = 0;
 			double y = 8.0 * (worldPoint.y - (1.5 - _worldRectangle.height)); // undo
 																				// shrink/translation

@@ -4,6 +4,7 @@ import infn.bed.event.ChargeTimeData;
 import infn.bed.event.EventManager;
 import infn.bed.math.MathematicalConstants;
 import infn.bed.util.CalibrationFileParser;
+import infn.bed.util.GetVetoLayer;
 import infn.bed.view.BedView;
 import infn.bed.view.FullSideView;
 
@@ -424,8 +425,9 @@ public class FullSideViewVeto extends RectangleItem {
 	public void getFeedbackStrings(IContainer container, Point screenPoint,
 			Point2D.Double worldPoint, List<String> feedbackStrings) {
 		if (_worldRectangle.contains(worldPoint)) {
-			String inVeto = "In veto: " + _veto;
-			feedbackStrings.add(inVeto);
+			int vetoLayer = GetVetoLayer.getVetoLayer(_veto);
+			String feedbackString = (vetoLayer == 1 ? "Crystal: " : (vetoLayer == 2 ? "Internal Veto: " : "External Veto: ")) + _veto;
+			feedbackStrings.add(feedbackString);
 			if (_view.getMode() == BedView.Mode.SINGLE_EVENT) {
 				singleEventFeedbackStrings(feedbackStrings);
 			} else {

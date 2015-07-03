@@ -194,31 +194,6 @@ public abstract class BedView extends EventDisplayView {
 	public abstract int getSector(Point2D.Double worldPoint);
 
 	/**
-	 * Some common feedback. Subclasses should override and then call
-	 * super.getFeedbackStrings
-	 * 
-	 * @param container
-	 *            the base container for the view.
-	 * @param screenPoint
-	 *            the pixel point
-	 * @param worldPoint
-	 *            the corresponding world location.
-	 */
-	@Override
-	public void getFeedbackStrings(IContainer container, Point screenPoint,
-			Point2D.Double worldPoint, List<String> feedbackStrings) {
-
-		super.getFeedbackStrings(container, screenPoint, worldPoint,
-				feedbackStrings);
-
-		// get the sector
-		int sector = getSector(worldPoint);
-		if (sector > 0) {
-			feedbackStrings.add("Bar " + sector);
-		}
-	}
-
-	/**
 	 * A new event has arrived from jevio. This is called by the generic
 	 * EventContol object. By the time we get here any detector specific parsing
 	 * on this event should be done, provided you haven't put the detector
