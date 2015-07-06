@@ -3,95 +3,81 @@ package infn.bed.view;
 import infn.bed.component.ControlPanel;
 
 import java.awt.Point;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
-import java.util.List;
 
 import javax.swing.Timer;
+
+import org.jlab.coda.jevio.EvioEvent;
 
 import cnuphys.bCNU.component.InfoWindow;
 import cnuphys.bCNU.component.TranslucentWindow;
 import cnuphys.bCNU.event.EventControl;
-import cnuphys.bCNU.graphics.container.IContainer;
 import cnuphys.bCNU.view.EventDisplayView;
 
-import org.jlab.coda.jevio.EvioEvent;
-
 /**
- * This abstract class defines a mouse listener and holds the control panel used
- * by subclasses. It represents the windows within the frame of the program.
+ * Defines a mouse listener and contains an instance of the ControlPanel object used by subclasses.
  * 
  * @author David Heddle
  * @author Andy Beiter
+ * @author Angelo Licastro
  */
 @SuppressWarnings("serial")
 public abstract class BedView extends EventDisplayView {
 
 	/**
-	 * The control panel that displays information on the side.
+	 * An instance of the ControlPanel object.
 	 */
 	protected ControlPanel _controlPanel;
 
 	/**
-	 * Trigger time for hover checks
+	 * The hovering check threshold.
 	 */
-	private long minHoverTrigger = 1000; // ms
+	private long hoveringCheckThreshold = -1;
 
 	/**
-	 * Number used to start counting for a hover
+	 * The hovering mouse event.
 	 */
-	private long hoverStartCheck = -1;
+	private MouseEvent hoveringMouseEvent;
 
 	/**
-	 * Field to hold the mouse event
+	 * The trajectory from the last hovering mouse event.
 	 */
-	private MouseEvent hoverMouseEvent;
+	private String _lastTrajectory;
 
 	/**
-	 * Last trajectory hovering response
-	 */
-	protected String _lastTrajStr;
-
-	/**
-	 * Creates instance and mouse listener
+	 * The constructor.
 	 * 
-	 * @param keyVals
-	 *            variable length argument list
+	 * @param args A variable-length argument list.
 	 */
-	public BedView(Object... keyVals) {
-		super(keyVals);
+	public BedView(Object... args) {
+		super(args);
 		createHeartbeat();
 		prepareForHovering();
 	}
 
 	/**
-	 * Checks if hovered for trigger time
+	 * Checks if the hovering event exceeds the hovering check threshold and the minimum hovering trigger.
 	 */
-	protected void ping() {
-		// check for over
-		if (hoverStartCheck > 0) {
-			if ((System.currentTimeMillis() - hoverStartCheck) > minHoverTrigger) {
-				hovering(hoverMouseEvent);
-				hoverStartCheck = -1;
+	private void ping() {
+		long minimumHoveringTrigger = 1000;
+		if (hoveringCheckThreshold > 0) {
+			if ((System.currentTimeMillis() - hoveringCheckThreshold) > minimumHoveringTrigger) {
+				createHoveringWindow(hoveringMouseEvent);
+				hoveringCheckThreshold = -1;
 			}
 		}
 	}
 
 	/**
-	 * Creates heartbeat to check for hovering
+	 * Creates a heartbeat to check for hovering.
 	 */
-	protected void createHeartbeat() {
+	private void createHeartbeat() {
 		int delay = 1000;
-		ActionListener taskPerformer = new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				ping();
-			}
-		};
+		ActionListener taskPerformer = event -> ping();
 		new Timer(delay, taskPerformer).start();
 	}
 
@@ -99,54 +85,54 @@ public abstract class BedView extends EventDisplayView {
 	 * Sets up mouse listeners for hovering.
 	 */
 	private void prepareForHovering() {
-		MouseMotionListener mml = new MouseMotionListener() {
+		MouseMotionListener mouseMotionListener = new MouseMotionListener() {
 
 			@Override
-			public void mouseDragged(MouseEvent me) {
+			public void mouseDragged(MouseEvent mouseEvent) {
 				resetHovering();
 			}
 
 			@Override
-			public void mouseMoved(MouseEvent me) {
+			public void mouseMoved(MouseEvent mouseEvent) {
 				closeHoverWindow();
-				hoverStartCheck = System.currentTimeMillis();
-				hoverMouseEvent = me;
+				hoveringCheckThreshold = System.currentTimeMillis();
+				hoveringMouseEvent = mouseEvent;
 			}
 		};
 
-		MouseListener ml = new MouseListener() {
+		MouseListener mouseListener = new MouseListener() {
 
 			@Override
-			public void mouseClicked(MouseEvent arg0) {
+			public void mouseClicked(MouseEvent mouseEvent) {
 				resetHovering();
 			}
 
 			@Override
-			public void mouseEntered(MouseEvent arg0) {
+			public void mouseEntered(MouseEvent mouseEvent) {
 			}
 
 			@Override
-			public void mouseExited(MouseEvent arg0) {
+			public void mouseExited(MouseEvent mouseEvent) {
 			}
 
 			@Override
-			public void mousePressed(MouseEvent arg0) {
+			public void mousePressed(MouseEvent mouseEvent) {
 				resetHovering();
 			}
 
 			@Override
-			public void mouseReleased(MouseEvent arg0) {
+			public void mouseReleased(MouseEvent mouseEvent) {
 				resetHovering();
 			}
 
 		};
 
-		getContainer().getComponent().addMouseMotionListener(mml);
-		getContainer().getComponent().addMouseListener(ml);
+		getContainer().getComponent().addMouseMotionListener(mouseMotionListener);
+		getContainer().getComponent().addMouseListener(mouseListener);
 	}
 
 	/**
-	 * Called to close the hover window.
+	 * Closes the hovering window.
 	 */
 	private void closeHoverWindow() {
 		TranslucentWindow.closeInfoWindow();
@@ -154,34 +140,32 @@ public abstract class BedView extends EventDisplayView {
 	}
 
 	/**
-	 * Resets the check for hovering
+	 * Resets the hovering check threshold.
 	 */
 	private void resetHovering() {
-		hoverStartCheck = -1;
+		hoveringCheckThreshold = -1;
 		closeHoverWindow();
 	}
 
 	/**
-	 * Show or hide the annotation layer.
+	 * Sets the visibility of the annotation layer.
 	 * 
-	 * @param show
-	 *            the value of the display flag.
+	 * @param isVisible The status of visibility. true if visible, false otherwise.
 	 */
-	public void showAnnotations(boolean show) {
+	public void showAnnotations(boolean isVisible) {
 		if (getContainer().getAnnotationLayer() != null) {
-			getContainer().getAnnotationLayer().setVisible(show);
+			getContainer().getAnnotationLayer().setVisible(isVisible);
 		}
 	}
 
 	/**
-	 * Sets whether or not we display the magnetic field layer.
+	 * Sets the visibility of the magnetic field layer.
 	 * 
-	 * @param show
-	 *            the value of the display flag.
+	 * @param isVisible The status of visibility. true if visible, false otherwise.
 	 */
-	public void showMagneticField(boolean show) {
+	public void showMagneticField(boolean isVisible) {
 		if (getMagneticFieldLayer() != null) {
-			getMagneticFieldLayer().setVisible(show);
+			getMagneticFieldLayer().setVisible(isVisible);
 		}
 	}
 
@@ -200,8 +184,7 @@ public abstract class BedView extends EventDisplayView {
 	 * specific parsing in a separate thread. This is the actual event not a
 	 * copy so it should not be modified.
 	 * 
-	 * @param event
-	 *            the new event.
+	 * @param event A new JEVIO event.
 	 */
 	@Override
 	public void newPhysicsEvent(final EvioEvent event) {
@@ -212,22 +195,19 @@ public abstract class BedView extends EventDisplayView {
 	}
 
 	/**
-	 * When hovering, creates hovering window.
+	 * Creates a hovering window.
 	 * 
-	 * @param me Mouse event that represents the hovering.
+	 * @param mouseEvent A hovering MouseEvent.
 	 */
-	protected void hovering(MouseEvent me) {
-
-		// avoid cursor
-		Point p = me.getLocationOnScreen();
-		p.x += 5;
-		p.y += 4;
-
-		if (_lastTrajStr != null) {
+	private void createHoveringWindow(MouseEvent mouseEvent) {
+		Point p = mouseEvent.getLocationOnScreen();
+		p.x = p.x + 5;
+		p.y = p.y + 4;
+		if (_lastTrajectory != null) {
 			if (TranslucentWindow.isTranslucencySupported()) {
-				TranslucentWindow.info(_lastTrajStr, 0.6f, p);
+				TranslucentWindow.info(_lastTrajectory, 0.6f, p);
 			} else {
-				InfoWindow.info(_lastTrajStr, p);
+				InfoWindow.info(_lastTrajectory, p);
 			}
 		}
 	}
