@@ -1,5 +1,6 @@
 package infn.bed.item;
 
+import infn.bed.util.CalibrationFileParser;
 import infn.bed.view.BarFrontView;
 import infn.bed.view.BedView;
 import infn.bed.event.AccumulationManager;
@@ -197,51 +198,16 @@ public class FrontViewBar extends RectangleItem {
 	 * TODO change file for real constants
 	 */
 	public void getConstants(File file) {
-
-		if ((file != null) && file.exists()) {
-			Log.getInstance().info(
-					"Calibration constants file found: " + file.getPath());
-			try {
-				FileReader fileReader = new FileReader(file);
-				BufferedReader bufferedReader = new BufferedReader(fileReader);
-				boolean notFound = true;
-				while (notFound) {
-					String s = bufferedReader.readLine();
-					if (s == null) {
-						break;
-					} else {
-						if (!s.startsWith("#") && (s.length() > 0)) {
-							String tokens[] = FileUtilities.tokens(s);
-							if (Integer.parseInt(tokens[0]) == _bar) {
-								notFound = false;
-								v_eff = Double.parseDouble(tokens[1]);
-								A_left = Double.parseDouble(tokens[2]);
-								A_right = Double.parseDouble(tokens[3]);
-								lambda = Double.parseDouble(tokens[4]);
-								delta_left = Double.parseDouble(tokens[5]);
-								delta_right = Double.parseDouble(tokens[6]);
-								tdcConvLeft = Double.parseDouble(tokens[7]);
-								tdcConvRight = Double.parseDouble(tokens[8]);
-								length = Double.parseDouble(tokens[9]);
-							}
-						}
-					}
-				}
-				bufferedReader.close();
-			} catch (FileNotFoundException e) {
-				Log.getInstance().exception(e);
-				e.printStackTrace();
-			} catch (IOException e) {
-				Log.getInstance().exception(e);
-				e.printStackTrace();
-			}
-			Log.getInstance().info(
-					"Successfully read in calibration constants.");
-		} else {
-			Log.getInstance().warning(
-					"Calibration constants file not found at: "
-							+ ((file == null) ? "???" : file.getPath()));
-		}
+		CalibrationFileParser calibrationFileParser = new CalibrationFileParser(file, "b", _bar);
+		v_eff = calibrationFileParser.getEffectiveVelocity();
+		A_left = calibrationFileParser.getLeftADCConversionFactor();
+		A_right = calibrationFileParser.getRightADCConversionFactor();
+		lambda = calibrationFileParser.getAttenuationLength();
+		delta_left = calibrationFileParser.getLeftShift();
+		delta_right = calibrationFileParser.getRightShift();
+		tdcConvLeft = calibrationFileParser.getLeftTDCConversionFactor();
+		tdcConvRight = calibrationFileParser.getRightTDCConversionFactor();
+		length = calibrationFileParser.getItemLength();
 	}
 
 	/**
