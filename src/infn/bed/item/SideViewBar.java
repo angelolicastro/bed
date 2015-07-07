@@ -186,20 +186,16 @@ public class SideViewBar extends RectangleItem {
 	 * TODO change file for real constants
 	 */
 	public void getConstants(File file) {
-		try {
-			CalibrationFileParser calibrationFileParser = new CalibrationFileParser(file, "b", _bar);
-			v_eff = calibrationFileParser.getEffectiveVelocity();
-			A_left = calibrationFileParser.getLeftADCConversionFactor();
-			A_right = calibrationFileParser.getRightADCConversionFactor();
-			lambda = calibrationFileParser.getAttenuationLength();
-			delta_left = calibrationFileParser.getLeftShift();
-			delta_right = calibrationFileParser.getRightShift();
-			tdcConvLeft = calibrationFileParser.getLeftTDCConversionFactor();
-			tdcConvRight = calibrationFileParser.getRightTDCConversionFactor();
-			length = calibrationFileParser.getItemLength();
-		} catch (Exception e) {
-			System.out.println("Invalid configuration file.");
-		}
+		CalibrationFileParser calibrationFileParser = new CalibrationFileParser(file, "b", _bar);
+		v_eff = calibrationFileParser.getEffectiveVelocity();
+		A_left = calibrationFileParser.getLeftADCConversionFactor();
+		A_right = calibrationFileParser.getRightADCConversionFactor();
+		lambda = calibrationFileParser.getAttenuationLength();
+		delta_left = calibrationFileParser.getLeftShift();
+		delta_right = calibrationFileParser.getRightShift();
+		tdcConvLeft = calibrationFileParser.getLeftTDCConversionFactor();
+		tdcConvRight = calibrationFileParser.getRightTDCConversionFactor();
+		length = calibrationFileParser.getItemLength();
 	}
 
 	/**
