@@ -432,7 +432,7 @@ public class FullSideView extends BedView {
 	 * @return The scintillator bar (1 - 9) or veto number (1 - 31), -1 if out of bounds.
 	 */
 	@Override
-	public int getSector(IContainer container, Point screenPoint, Point2D.Double worldPoint) {
+	public int getSector(Point2D.Double worldPoint) {
 		for (int bar = 0; bar < GeometricConstants.BARS; bar++) {
 			if (_barWorldRectangles[bar].contains(worldPoint)) {
 				// Convert to one-based indexing.
