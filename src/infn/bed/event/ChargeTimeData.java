@@ -11,9 +11,7 @@ import org.jlab.coda.jevio.IEvioStructure;
 import cnuphys.lund.LundId;
 
 /**
- * This class handles the reading in of a charge-time data file. It also
- * converts the full waveform data to charge-time data in a special constructor.
- * This allows the view classes to base their code off this class.
+ * Parses a charge-time data file and converts full-waveform data to charge-time data.
  * 
  * @author Andy Beiter
  * @author Angelo Licastro
@@ -21,293 +19,300 @@ import cnuphys.lund.LundId;
 public class ChargeTimeData implements ILoad {
 
 	/**
-	 * An array of the hit sectors (which detectors)
+	 * An array of hit sectors (detectors).
 	 */
-	private int sectorArr[];
+	private int sectorArray[];
 
 	/**
-	 * An array of the hit layers (columns in the detector)
+	 * An array of hit layers (columns).
 	 */
-	private int layerArr[];
+	private int layerArray[];
 
 	/**
-	 * An array of the hit paddles (rows in the detectors)
+	 * An array of hit paddles (rows).
 	 */
-	private int paddleArr[];
+	private int paddleArray[];
 
 	/**
-	 * An array of the charges from hits in the left PMTs
+	 * An array of left PMT (photomultiplier tube) hit charges.
 	 */
-	private int chargeLeft[];
+	private int leftPMTChargeArray[];
 
 	/**
-	 * An array of the charges from hits in the right PMTs
+	 * An array of right PMT (photomultiplier tube) hit charges.
 	 */
-	private int chargeRight[];
+	private int rightPMTChargeArray[];
 
 	/**
-	 * An array of the times from hits in the left PMTs
+	 * An array of left PMT (photomultiplier tube) hit times.
 	 */
-	private int timeLeft[];
+	private int leftPMTTimeArray[];
 
 	/**
-	 * An array of the times from hits in the right PMTs
+	 * An array of right PMT (photomultiplier tube) hit times.
 	 */
-	private int timeRight[];
+	private int rightPMTTimeArray[];
 
 	/**
-	 * An array of the hit veto sectors (which detector)
+	 * An array of veto hit sectors (detectors).
 	 */
-	private int vetoSector[];
+	private int vetoSectorArray[];
 
 	/**
-	 * An array indicating if the hit veto was internal or external
+	 * An array of veto hit layers (internal or external).
 	 */
-	private int vetoIntOrExt[];
+	private int vetoLayerArray[];
 
 	/**
-	 * An array representing which of the vetoes was hit. For numbering, see
-	 * FullSideView.java
+	 * An array of veto hit channels.
+	 * 
+	 * @see infn.bed.view.FullSideView
 	 */
-	private int vetoChannel[];
+	private int vetoChannelArray[];
 
 	/**
-	 * An array of the charges from hits in the vetoes.
+	 * An array of veto hit charges.
 	 */
-	private int vetoCharge1[];
+	private int vetoChargeArray[];
 
 	/**
-	 * An array of the charges from hits in the vetoes if the vetoes use two
-	 * PMTs. It should only contain data for the top and bottom external vetoes.
+	 * An array of dual SiPM (silicon photomultiplier) veto hit charges.
+	 * 
+	 * <p>
+	 * NOTE: This array should only contain charges from the external top and bottom vetoes.
+	 * </p>
 	 */
-	private int vetoCharge2[];
+	private int dualSiPMVetoChargeArray[];
 
 	/**
-	 * An array of the times from hits in the vetoes.
+	 * An array of veto hit times.
 	 */
-	private int vetoTime1[];
+	private int vetoTimeArray[];
 
 	/**
-	 * An array of the times from hits in the vetoes if the vetoes use two PMTs.
-	 * It should only contain data for the top and bottom external vetoes.
+	 * An array of dual SiPM (silicon photomultiplier) veto hit times.
+	 * 
+	 * <p>
+	 * NOTE: This array should only contain times from the external top and bottom vetoes.
+	 * </p>
 	 */
-	private int vetoTime2[];
+	private int dualSiPMVetoTimeArray[];
 
 	/**
-	 * Constructor used for charge-time files
+	 * The constructor.
 	 */
 	public ChargeTimeData() {
+		super();
 	}
 
 	/**
-	 * Constructor used for full waveshape files. Converts the waveshape to
-	 * charge-time information.
+	 * Converts full-waveform data to charge-time data.
 	 * 
-	 * @param samples
-	 *            The waveshape from the PMTs
+	 * @param sampleArrayList An ArrayList of PMT (photomultiplier tube) full-waveform data.
 	 */
-	public ChargeTimeData(ArrayList<ArrayList<Short>> samples) {
-		ArrayList<Double> leftCharges = new ArrayList<Double>();
-		ArrayList<Double> leftTimes = new ArrayList<Double>();
-		ArrayList<Double> rightCharges = new ArrayList<Double>();
-		ArrayList<Double> rightTimes = new ArrayList<Double>();
-		ArrayList<Integer> sectors = new ArrayList<Integer>();
-		ArrayList<Integer> layers = new ArrayList<Integer>();
-		ArrayList<Integer> paddles = new ArrayList<Integer>();
-
-		for (int i = 0; i < samples.size(); i++) {
-			if (i < (GeometricConstants.BARS * 2)) { // if a bar
-				// assumes info is first
-				ArrayList<Short> leftSamples = samples.get(i);
-				ArrayList<Short> rightSamples = samples.get(i + 1);
-
-				int[] barL = TranslationTable.bars[i];
-				int[] barR = TranslationTable.bars[i + 1];
-				@SuppressWarnings("unused") //TODO unused
-				int indexL = barL[0];
-				int sectorL = barL[1];
-				int layerL = barL[2];
-				int paddleL = barL[3];
-				@SuppressWarnings("unused")
-				int indexR = barR[0];
-				int sectorR = barR[1];
-				int layerR = barR[2];
-				int paddleR = barR[3];
+	public ChargeTimeData(ArrayList<ArrayList<Short>> sampleArrayList) {
+		ArrayList<Double> leftPMTChargeArrayList = new ArrayList<>();
+		ArrayList<Double> leftPMTTimeArrayList = new ArrayList<>();
+		
+		ArrayList<Double> rightPMTChargeArrayList = new ArrayList<>();
+		ArrayList<Double> rightPMTTimeArrayList = new ArrayList<>();
+		
+		ArrayList<Integer> sectorArrayList = new ArrayList<>();
+		ArrayList<Integer> layerArrayList = new ArrayList<>();
+		ArrayList<Integer> paddleArrayList = new ArrayList<>();
+		
+		for (int i = 0; i < sampleArrayList.size(); i++) {
+			if (i < (GeometricConstants.BARS * 2)) {
+				ArrayList<Short> leftPMTSampleArrayList = sampleArrayList.get(i);
+				ArrayList<Short> rightPMTSampleArrayList = sampleArrayList.get(i + 1);
 				
-				int leftHits = convertHits(leftSamples, leftCharges, leftTimes);
-				for (int hit = 0; hit < leftHits; hit++) {
-					sectors.add(sectorL);
-					layers.add(layerL);
-					paddles.add(paddleL);
+				int[] barLeftPMTArray = TranslationTable.bars[i];
+				int[] barRightPMTArray = TranslationTable.bars[i + 1];
+				
+				@SuppressWarnings("unused")
+				int barLeftPMTIndex = barLeftPMTArray[0];
+				int barLeftPMTSector = barLeftPMTArray[1];
+				int barLeftPMTLayer = barLeftPMTArray[2];
+				int barLeftPMTPaddle = barLeftPMTArray[3];
+				
+				@SuppressWarnings("unused")
+				int barRightPMTIndex = barRightPMTArray[0];
+				int barRightPMTSector = barRightPMTArray[1];
+				int barRightPMTLayer = barRightPMTArray[2];
+				int barRightPMTPaddle = barRightPMTArray[3];
+				
+				int barLeftPMTHits = convertHits(leftPMTSampleArrayList, leftPMTChargeArrayList, leftPMTTimeArrayList);
+				int barRightPMTHits = convertHits(rightPMTSampleArrayList, rightPMTChargeArrayList, rightPMTTimeArrayList);
+				
+				for (int hit = 0; hit < barLeftPMTHits; hit++) {
+					sectorArrayList.add(barLeftPMTSector);
+					layerArrayList.add(barLeftPMTLayer);
+					paddleArrayList.add(barLeftPMTPaddle);
 				}
-				int rightHits = convertHits(rightSamples, rightCharges,
-						rightTimes);
-				for (int hit = 0; hit < rightHits; hit++) {
-					sectors.add(sectorR);
-					layers.add(layerR);
-					paddles.add(paddleR);
+				
+				for (int hit = 0; hit < barRightPMTHits; hit++) {
+					sectorArrayList.add(barRightPMTSector);
+					layerArrayList.add(barRightPMTLayer);
+					paddleArrayList.add(barRightPMTPaddle);
 				}
-				i++; // we do 2 bar channels at once, not 2 veto channels
-			} else { //if a veto
-				//TODO veto charge
+				i++;
+			} else {
+				// TODO: Implement full-waveform data to charge-time data conversion for vetoes.
 			}
 		}
 
-		// set arrays to final charge time data
-		sectorArr = getIntArray(sectors);
-		layerArr = getIntArray(layers);
-		paddleArr = getIntArray(paddles);
-		chargeLeft = getIntArrayDoubleCast(leftCharges);
-		chargeRight = getIntArrayDoubleCast(rightCharges);
-		timeLeft = getIntArrayDoubleCast(leftTimes);
-		timeRight = getIntArrayDoubleCast(rightTimes);
+		sectorArray = getIntArrayFromIntegerArrayList(sectorArrayList);
+		layerArray = getIntArrayFromIntegerArrayList(layerArrayList);
+		paddleArray = getIntArrayFromIntegerArrayList(paddleArrayList);
+		
+		leftPMTChargeArray = getIntArrayFromDoubleArrayList(leftPMTChargeArrayList);
+		rightPMTChargeArray = getIntArrayFromDoubleArrayList(rightPMTChargeArrayList);
+		
+		leftPMTTimeArray = getIntArrayFromDoubleArrayList(leftPMTTimeArrayList);
+		rightPMTTimeArray = getIntArrayFromDoubleArrayList(rightPMTTimeArrayList);
 	}
-
-	private int convertHits(ArrayList<Short> samples,
-			ArrayList<Double> charges, ArrayList<Double> times) {
-		int numHits = 0;
-		double a_L = 0, b_L = 0, charge = 0, time = 0, threshold = 0;
-		double fADCResistance = MathematicalConstants.FADC_RESISTANCE; // in ohms, resistance of fADC
-		boolean collectingPulse = false; // if we have a hit
-		threshold = getThreshold(); // gets threshold to look for hits
-									// above
-		for (int j = 1; j < (samples.size() - 1); j++) {
-			if (samples.get(j) > threshold && samples.get(j - 1) < threshold) {
-				a_L = samples.get(j + 1) - samples.get(j - 1) * 1.0 / 4.0;
-				b_L = samples.get(j + 1) - a_L * (j - 1) * 4;
-				charge += (samples.get(j) / fADCResistance) * (j - 1) * 4;
+	
+	/**
+	 * @param sampleArrayList An ArrayList of samples.
+	 * @param chargeArrayList An ArrayList of charges.
+	 * @param timeArrayList An ArrayList of times.
+	 * @return hits The number of hits.
+	 */
+	private int convertHits(ArrayList<Short> sampleArrayList, ArrayList<Double> chargeArrayList, ArrayList<Double> timeArrayList) {
+		int hits = 0;
+		double a_L = 0;
+		double b_L = 0;
+		double charge = 0;
+		double time = 0;
+		boolean collectingPulse = false;
+		for (int i = 1; i < (sampleArrayList.size() - 1); i++) {
+			if (sampleArrayList.get(i) > MathematicalConstants.ADC_THRESHOLD && sampleArrayList.get(i - 1) < MathematicalConstants.ADC_THRESHOLD) {
+				a_L = sampleArrayList.get(i + 1) - sampleArrayList.get(i - 1) * 1 / 4;
+				b_L = sampleArrayList.get(i + 1) - a_L * (i - 1) * 4;
+				charge = charge + (sampleArrayList.get(i) / MathematicalConstants.FADC_RESISTANCE) * (i - 1) * 4;
 				collectingPulse = true;
-			} else if ((samples.get(j + 1) < samples.get(j))
-					&& (samples.get(j - 1) < samples.get(j))
-					&& (samples.get(j) > threshold)) {
-				time = samples.get(j) / 2.0;
-				time -= b_L;
-				time /= a_L;
-				charge += (samples.get(j) / fADCResistance) * (j - 1) * 4;
-			} else if ((samples.get(j) > threshold)
-					&& (samples.get(j + 1) < threshold)) { // end of
-															// hit
-				charge += (samples.get(j) / fADCResistance) * (j - 1) * 4;
-				// add and reset
-				charges.add(charge);
-				times.add(time);
-				numHits++;
+			} else if ((sampleArrayList.get(i + 1) < sampleArrayList.get(i)) && (sampleArrayList.get(i - 1) < sampleArrayList.get(i)) && (sampleArrayList.get(i) > MathematicalConstants.ADC_THRESHOLD)) {
+				time = sampleArrayList.get(i) / 2;
+				time = time - b_L;
+				time = time / a_L;
+				charge = charge + (sampleArrayList.get(i) / MathematicalConstants.FADC_RESISTANCE) * (i - 1) * 4;
+			} else if ((sampleArrayList.get(i) > MathematicalConstants.ADC_THRESHOLD) && (sampleArrayList.get(i + 1) < MathematicalConstants.ADC_THRESHOLD)) {
+				charge = charge + (sampleArrayList.get(i) / MathematicalConstants.FADC_RESISTANCE) * (i - 1) * 4;
+				chargeArrayList.add(charge);
+				timeArrayList.add(time);
+				hits++;
 				a_L = 0;
 				b_L = 0;
-				time = 0;
 				charge = 0;
+				time = 0;
 				collectingPulse = false;
-			} else if (collectingPulse) { // collecting, but not the
-											// extremes
-				charge += (samples.get(j) / fADCResistance) * (j - 1) * 4;
+			} else if (collectingPulse) {
+				charge = charge + (sampleArrayList.get(i) / MathematicalConstants.FADC_RESISTANCE) * (i - 1) * 4;
 			}
 		}
-		return numHits;
+		return hits;
 	}
 
 	/**
-	 * Returns the threshold of the ADC (analog-to-digital converter).
+	 * Converts an ArrayList of Integers to an array of ints.
 	 * 
-	 * @return The ADC threshold.
+	 * @param integerArrayList An ArrayList of Integers.
+	 * @return intArray An array of ints.
 	 */
-	private double getThreshold() {
-		return MathematicalConstants.ADC_THRESHOLD;
-	}
-
-	/**
-	 * Converts ArrayList of Integers to an int array
-	 * 
-	 * @param ints
-	 *            ArrayList of Integers
-	 * @return primitive array of ints
-	 */
-	private int[] getIntArray(ArrayList<Integer> ints) {
-		int primArr[] = new int[ints.size()];
-		for (int i = 0; i < primArr.length; i++) {
-			primArr[i] = ints.get(i);
+	private int[] getIntArrayFromIntegerArrayList(ArrayList<Integer> integerArrayList) {
+		int intArray[] = new int[integerArrayList.size()];
+		for (int i = 0; i < intArray.length; i++) {
+			intArray[i] = integerArrayList.get(i);
 		}
-		return primArr;
+		return intArray;
 	}
-
+	
 	/**
-	 * Converts ArrayList of Doubles to an int array
+	 * Converts an ArrayList of Doubles to an array of ints.
 	 * 
-	 * @param doubles
-	 *            ArrayList of Doubles
-	 * @return primitive array of ints
+	 * @param doubleArrayList An ArrayList of Doubles.
+	 * @return intArray An array of ints.
 	 */
-	private int[] getIntArrayDoubleCast(ArrayList<Double> doubles) {
-		int primArr[] = new int[doubles.size()];
-		for (int i = 0; i < primArr.length; i++) {
-			// must do two steps
-			double temp = doubles.get(i);
-			primArr[i] = (int) temp;
+	private int[] getIntArrayFromDoubleArrayList(ArrayList<Double> doubleArrayList) {
+		int intArray[] = new int[doubleArrayList.size()];
+		for (int i = 0; i < intArray.length; i++) {
+			intArray[i] = (int)((double)doubleArrayList.get(i));
 		}
-		return primArr;
+		return intArray;
 	}
 
 	/**
-	 * Loads in the charge-time data from a charge-time file. Tag 102 is for
-	 * bars and tag 202 is for vetoes. Numbers 1-7 gets the sector,
-	 * layer/intOrExt, paddle/channel, chargeLeft/1, chargeRight/2, timeLeft/1,
-	 * and timeRight/2 arrays, respectively.
+	 * Loads charge-time data from a charge-time file.
 	 * 
-	 * @param structure
-	 *            The data
-	 * @param tag
-	 *            The tag used to identify the data
-	 * @param num
-	 *            The number used to identify the data
+	 * @param structure An instance of the IEvioStructure object.
+	 * @param tag The tag of the bank.
+	 * @param num The num of the bank.
 	 */
 	@Override
 	public void load(IEvioStructure structure, int tag, int num) {
 		try {
+			// Scintillator Bar
 			if (tag == 102) {
 				switch (num) {
+				// Scintillator Bar Sector
 				case 1:
-					sectorArr = structure.getIntData();
+					sectorArray = structure.getIntData();
 					break;
+				// Scintillator Bar Layer
 				case 2:
-					layerArr = structure.getIntData();
+					layerArray = structure.getIntData();
 					break;
+				// Scintillator Bar Paddle
 				case 3:
-					paddleArr = structure.getIntData();
+					paddleArray = structure.getIntData();
 					break;
+				// Scintillator Bar Left PMT Charge
 				case 4:
-					chargeLeft = structure.getIntData();
+					leftPMTChargeArray = structure.getIntData();
 					break;
+				// Scintillator Bar Right PMT Charge
 				case 5:
-					chargeRight = structure.getIntData();
+					rightPMTChargeArray = structure.getIntData();
 					break;
+				// Scintillator Bar Left PMT Time
 				case 6:
-					timeLeft = structure.getIntData();
+					leftPMTTimeArray = structure.getIntData();
 					break;
+				// Scintillator Bar Right PMT Time
 				case 7:
-					timeRight = structure.getIntData();
+					rightPMTTimeArray = structure.getIntData();
 					break;
 				}
+			// Veto
 			} else if (tag == 202) {
 				switch (num) {
+				// Veto Sector
 				case 1:
-					vetoSector = structure.getIntData();
+					vetoSectorArray = structure.getIntData();
 					break;
+				// Veto Layer
 				case 2:
-					vetoIntOrExt = structure.getIntData();
+					vetoLayerArray = structure.getIntData();
 					break;
+				// Veto Channel
 				case 3:
-					vetoChannel = structure.getIntData();
+					vetoChannelArray = structure.getIntData();
 					break;
+				// Veto Charge
 				case 4:
-					vetoCharge1 = structure.getIntData();
+					vetoChargeArray = structure.getIntData();
 					break;
+				// Dual SiPM Veto Charge
 				case 5:
-					vetoCharge2 = structure.getIntData();
+					dualSiPMVetoChargeArray = structure.getIntData();
 					break;
+				// Veto Time
 				case 6:
-					vetoTime1 = structure.getIntData();
+					vetoTimeArray = structure.getIntData();
 					break;
+				// Dual SiPM Veto Charge
 				case 7:
-					vetoTime2 = structure.getIntData();
+					dualSiPMVetoTimeArray = structure.getIntData();
 					break;
 				}
 			}
@@ -327,129 +332,129 @@ public class ChargeTimeData implements ILoad {
 	}
 
 	/**
-	 * Gets the hit sector array
+	 * Returns the array of hit sectors (detectors).
 	 * 
-	 * @return The array of hit sectors
+	 * @return The array of hit sectors (detectors).
 	 */
-	public int[] getSector() {
-		return sectorArr;
+	public int[] getSectorArray() {
+		return sectorArray;
 	}
 
 	/**
-	 * Gets the hit layer array
+	 * Returns the array of hit layers (columns).
 	 * 
-	 * @return The array of hit layers
+	 * @return The array of hit layers (columns).
 	 */
-	public int[] getLayer() {
-		return layerArr;
+	public int[] getLayerArray() {
+		return layerArray;
 	}
 
 	/**
-	 * Gets the hit sector paddle
+	 * Returns the array of hit paddles (rows).
 	 * 
-	 * @return The array of hit paddles
+	 * @return The array of hit paddles (rows).
 	 */
-	public int[] getPaddle() {
-		return paddleArr;
+	public int[] getPaddleArray() {
+		return paddleArray;
 	}
 
 	/**
-	 * Gets the charges from the left PMT
+	 * Returns the array of left PMT (photomultiplier tube) hit charges.
 	 * 
-	 * @return The array of charges from the left PMT
+	 * @return The array of left PMT (photomultiplier tube) hit charges.
 	 */
-	public int[] getChargeLeft() {
-		return chargeLeft;
+	public int[] getLeftPMTChargeArray() {
+		return leftPMTChargeArray;
 	}
 
 	/**
-	 * Gets the charges from the right PMT
+	 * Returns the array of right PMT (photomultiplier tube) hit charges.
 	 * 
-	 * @return The array of charges from the right PMT
+	 * @return The array of right PMT (photomultiplier tube) hit charges.
 	 */
-	public int[] getChargeRight() {
-		return chargeRight;
+	public int[] getRightPMTChargeArray() {
+		return rightPMTChargeArray;
 	}
 
 	/**
-	 * Gets the times from the left PMT
+	 * Returns the array of left PMT (photomultiplier tube) hit times.
 	 * 
-	 * @return The array of times from the left PMT
+	 * @return The array of left PMT (photomultiplier tube) hit times.
 	 */
-	public int[] getTimeLeft() {
-		return timeLeft;
+	public int[] getLeftPMTTimeArray() {
+		return leftPMTTimeArray;
 	}
 
 	/**
-	 * Gets the times from the right PMT
+	 * Returns the array of right PMT (photomultiplier tube) hit times.
 	 * 
-	 * @return The array of times from the right PMT
+	 * @return The array of right PMT (photomultiplier tube) hit times.
 	 */
-	public int[] getTimeRight() {
-		return timeRight;
+	public int[] getRightPMTTimeArray() {
+		return rightPMTTimeArray;
 	}
 
 	/**
-	 * Gets the hit veto sector array
+	 * Returns the array of veto hit sectors (detectors).
 	 * 
-	 * @return The array of hit veto sectors
+	 * @return The array of veto hit sectors (detectors).
 	 */
-	public int[] getVetoSector() {
-		return vetoSector;
+	public int[] getVetoSectorArray() {
+		return vetoSectorArray;
 	}
 
 	/**
-	 * Gets the hit intOrExt array
+	 * Returns the array of veto hit layers (internal or external).
 	 * 
-	 * @return The array of hit intOrExts
+	 * @return The array of veto hit layers (internal or external).
 	 */
-	public int[] getVetoIntOrExt() {
-		return vetoIntOrExt;
+	public int[] getVetoLayerArray() {
+		return vetoLayerArray;
 	}
 
 	/**
-	 * Gets the hit veto channel array
+	 * Returns the array of veto hit channels.
 	 * 
-	 * @return The array of hit veto channels
+	 * @return The array of veto hit channels.
 	 */
-	public int[] getVetoChannel() {
-		return vetoChannel;
+	public int[] getVetoChannelArray() {
+		return vetoChannelArray;
 	}
 
 	/**
-	 * Gets the veto charges from the first PMT
+	 * Returns the array of veto hit charges.
 	 * 
-	 * @return The array of veto charges from the first PMT
+	 * @return The array of veto hit charges.
 	 */
-	public int[] getVetoCharge1() {
-		return vetoCharge1;
+	public int[] getVetoChargeArray() {
+		return vetoChargeArray;
 	}
 
 	/**
-	 * Gets the veto charges from the second PMT
+	 * Returns the array of dual SiPM (silicon photomultiplier) veto hit charges.
 	 * 
-	 * @return The array of veto charges from the second PMT
+	 * @return The array of dual SiPM (silicon photomultiplier) veto hit charges.
 	 */
-	public int[] getVetoCharge2() {
-		return vetoCharge2;
+	public int[] getDualSiPMVetoChargeArray() {
+		return dualSiPMVetoChargeArray;
 	}
 
 	/**
-	 * Gets the veto times from the first PMT
+	 * Returns the array of veto hit times.
 	 * 
-	 * @return The array of veto times from the first PMT
+	 * @return The array of veto hit times.
 	 */
-	public int[] getVetoTime1() {
-		return vetoTime1;
+	public int[] getVetoTimeArray() {
+		return vetoTimeArray;
 	}
 
 	/**
-	 * Gets the veto times from the second PMT
+	 * Returns the array of dual SiPM (silicon photomultiplier) veto hit times.
 	 * 
-	 * @return The array of veto times from the second PMT
+	 * @return The array of dual SiPM (silicon photomultiplier) veto hit times.
 	 */
-	public int[] getVetoTime2() {
-		return vetoTime2;
+	public int[] getDualSiPMVetoTimeArray() {
+		return dualSiPMVetoTimeArray;
 	}
 
 }
