@@ -17,7 +17,7 @@ public class GeometricConstants {
 	/**
 	 * The number of crystals.
 	 */
-	public static final int CRYSTALS = 1;
+	public static final int CRYSTALS = 4;
 	
 	/**
 	 * The number of internal vetoes.

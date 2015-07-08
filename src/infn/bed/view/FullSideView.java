@@ -7,6 +7,7 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.List;
 
 import cnuphys.bCNU.attributes.AttributeType;
@@ -25,45 +26,48 @@ import infn.bed.item.FullSideViewBar;
 import infn.bed.item.FullSideViewVeto;
 
 /**
- * Handles the drawing of the Full Side View, which consists of a scintillator bar matrix and a set of vetoes.
+ * Draws the Full Side View, which consists of a set of crystals, a scintillator bar matrix, and a set of vetoes.
  * 
  * <p>
  * The following is the numbering scheme for the vetoes.<br>
- * 1. Crystal<br>
- * 2. Internal Upstream Far Bottom<br>
- * 3. Internal Upstream Bottom<br>
- * 4. Internal Upstream Top<br>
- * 5. Internal Upstream Far Top<br>
- * 6. Internal Top Far Left<br>
- * 7. Internal Top Left<br>
- * 8. Internal Top Right<br>
- * 9. Internal Top Far Right<br>
- * 10. Internal Downstream Far Top<br>
- * 11. Internal Downstream Top<br>
- * 12. Internal Downstream Bottom<br>
- * 13. Internal Downstream Far Bottom<br>
- * 14. Internal Bottom Far Right<br>
- * 15. Internal Bottom Right<br>
- * 16. Internal Bottom Left<br>
- * 17. Internal Bottom Far Left<br>
- * 18. Internal Left<br>
- * 19. Internal Right<br>
- * 20. External Upstream Bottom<br>
- * 21. External Upstream Top<br>
- * 22. External Top Left<br>
- * 23. External Top Middle<br>
- * 24. External Top Right<br>
- * 25. External Downstream Top<br>
- * 26. External Downstream Bottom<br>
- * 27. External Bottom Right<br>
- * 28. External Bottom Middle<br>
- * 29. External Bottom Left<br>
- * 30. External Left<br>
- * 31. External Right<br>
+ * 1. Far Top Crystal<br>
+ * 2. Top Crystal<br>
+ * 3. Bottom Crystal<br>
+ * 4. Far Bottom Crystal<br>
+ * 5. Internal Upstream Far Bottom<br>
+ * 6. Internal Upstream Bottom<br>
+ * 7. Internal Upstream Top<br>
+ * 8. Internal Upstream Far Top<br>
+ * 9. Internal Top Far Left<br>
+ * 10. Internal Top Left<br>
+ * 11. Internal Top Right<br>
+ * 12. Internal Top Far Right<br>
+ * 13. Internal Downstream Far Top<br>
+ * 14. Internal Downstream Top<br>
+ * 15. Internal Downstream Bottom<br>
+ * 16. Internal Downstream Far Bottom<br>
+ * 17. Internal Bottom Far Right<br>
+ * 18. Internal Bottom Right<br>
+ * 19. Internal Bottom Left<br>
+ * 20. Internal Bottom Far Left<br>
+ * 21. Internal Left<br>
+ * 22. Internal Right<br>
+ * 23. External Upstream Bottom<br>
+ * 24. External Upstream Top<br>
+ * 25. External Top Left<br>
+ * 26. External Top Middle<br>
+ * 27. External Top Right<br>
+ * 28. External Downstream Top<br>
+ * 29. External Downstream Bottom<br>
+ * 30. External Bottom Right<br>
+ * 31. External Bottom Middle<br>
+ * 32. External Bottom Left<br>
+ * 33. External Left<br>
+ * 34. External Right<br>
  * </p>
  * 
  * <p>
- * NOTE: While the crystal is not a veto, it is classified as a veto for brevity and consistency.
+ * NOTE: While the crystals are not vetoes, they are classified as vetoes for brevity and consistency.
  * </p>
  * 
  * @author Andy Beiter
@@ -80,7 +84,7 @@ public class FullSideView extends BedView {
 	/**
 	 * An array of veto rectangles.
 	 */
-	private Rectangle2D.Double _vetoWorldRectangles[];
+	private ArrayList<Rectangle2D.Double> _vetoWorldRectanglesArrayList;
 
 	/**
 	 * Used for drawing bar and veto rectangles.
@@ -158,7 +162,7 @@ public class FullSideView extends BedView {
 	private void setBarWorldRectangles() {
 
 		_barWorldRectangles = new Rectangle2D.Double[GeometricConstants.BARS];
-		_vetoWorldRectangles = new Rectangle2D.Double[GeometricConstants.VETOES];
+		_vetoWorldRectanglesArrayList = new ArrayList<>(GeometricConstants.VETOES);
 
 		Rectangle2D.Double worldRectangle = _defaultWorldRectangle;
 
@@ -210,141 +214,157 @@ public class FullSideView extends BedView {
 		 */
 		
 		/*
-		 * Crystal
+		 * Crystals
 		 */
 		
-		// Crystal
-		_vetoWorldRectangles[0] = new Rectangle2D.Double(barLeft + 3 * boxWidth + gap - boxWidth / 2.5, y23, gap / 1.5, boxHeight / 1.5);
+		// Far Bottom Crystal
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft + 3 * boxWidth + gap - boxWidth / 2.75, barBottom + gap / 2, gap / 2, boxHeight / 2));
+		
+		// Bottom Crystal
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft + 3 * boxWidth + gap - boxWidth / 2.75, _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getY() + _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getHeight() + gap / 2, gap / 2, boxHeight / 2));
+		
+		// Top Crystal
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft + 3 * boxWidth + gap - boxWidth / 2.75, _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getY() + _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getHeight() + gap / 2, gap / 2, boxHeight / 2));
+		
+		// Far Top Crystal
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft + 3 * boxWidth + gap - boxWidth / 2.75, _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getY() + _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getHeight() + gap / 2, gap / 2, boxHeight / 2));
 		
 		/*
 		 * Internal Upstream Vetoes
 		 */
 		
 		// Internal Upstream Far Bottom
-		_vetoWorldRectangles[1] = new Rectangle2D.Double(barLeft - 2 * gap, barBottom, gap, 3 * boxHeight / 4);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft - 2 * gap, barBottom, gap, 3 * boxHeight / 4));
 
 		// Internal Upstream Bottom
-		_vetoWorldRectangles[2] = new Rectangle2D.Double(barLeft - 2 * gap, _vetoWorldRectangles[1].getY() + _vetoWorldRectangles[1].getHeight(), gap, 3 * boxHeight / 4);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft - 2 * gap, _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getY() + _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getHeight(), gap, 3 * boxHeight / 4));
 
 		// Internal Upstream Top
-		_vetoWorldRectangles[3] = new Rectangle2D.Double(barLeft - 2 * gap, _vetoWorldRectangles[2].getY() + _vetoWorldRectangles[2].getHeight(), gap, 3 * boxHeight / 4);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft - 2 * gap, _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getY() + _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getHeight(), gap, 3 * boxHeight / 4));
 
 		// Internal Upstream Far Top
-		_vetoWorldRectangles[4] = new Rectangle2D.Double(barLeft - 2 * gap, _vetoWorldRectangles[3].getY() + _vetoWorldRectangles[3].getHeight(), gap, 3 * boxHeight / 4);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft - 2 * gap, _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getY() + _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getHeight(), gap, 3 * boxHeight / 4));
+		int internalUpstreamUpperIndex = _vetoWorldRectanglesArrayList.size() - 1;
 		
 		/*
 		 * Internal Top Vetoes
 		 */
 		
 		// Internal Top Far Left
-		_vetoWorldRectangles[5] = new Rectangle2D.Double(barLeft, barBottom + 3 * boxHeight + gap, 3 * boxWidth / 4, gap);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft, barBottom + 3 * boxHeight + gap, 3 * boxWidth / 4, gap));
 		
 		// Internal Top Left
-		_vetoWorldRectangles[6] = new Rectangle2D.Double(_vetoWorldRectangles[5].getX() + _vetoWorldRectangles[5].getWidth(), barBottom + 3 * boxHeight + gap, 3 * boxWidth / 4, gap);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(_vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getX() + _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getWidth(), barBottom + 3 * boxHeight + gap, 3 * boxWidth / 4, gap));
 		
 		// Internal Top Right
-		_vetoWorldRectangles[7] = new Rectangle2D.Double(_vetoWorldRectangles[6].getX() + _vetoWorldRectangles[6].getWidth(), barBottom + 3 * boxHeight + gap, 3 * boxWidth / 4, gap);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(_vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getX() + _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getWidth(), barBottom + 3 * boxHeight + gap, 3 * boxWidth / 4, gap));
 		
 		// Internal Top Far Right
-		_vetoWorldRectangles[8] = new Rectangle2D.Double(_vetoWorldRectangles[7].getX() + _vetoWorldRectangles[7].getWidth(), barBottom + 3 * boxHeight + gap, 3 * boxWidth / 4, gap);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(_vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getX() + _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getWidth(), barBottom + 3 * boxHeight + gap, 3 * boxWidth / 4, gap));
+		int internalTopUpperIndex = _vetoWorldRectanglesArrayList.size() - 1;
 		
 		/*
 		 * Internal Downstream Vetoes
 		 */
 		
 		// Internal Downstream Far Top
-		_vetoWorldRectangles[9] = new Rectangle2D.Double(barLeft + 3 * boxWidth + gap, _vetoWorldRectangles[4].getY(), gap, 3 * boxHeight / 4);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft + 3 * boxWidth + gap, _vetoWorldRectanglesArrayList.get(internalUpstreamUpperIndex).getY(), gap, 3 * boxHeight / 4));
 		
 		// Internal Downstream Top
-		_vetoWorldRectangles[10] = new Rectangle2D.Double(barLeft + 3 * boxWidth + gap, _vetoWorldRectangles[3].getY(), gap, 3 * boxHeight / 4);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft + 3 * boxWidth + gap, _vetoWorldRectanglesArrayList.get(internalUpstreamUpperIndex - 1).getY(), gap, 3 * boxHeight / 4));
 		
 		// Internal Downstream Bottom
-		_vetoWorldRectangles[11] = new Rectangle2D.Double(barLeft + 3 * boxWidth + gap, _vetoWorldRectangles[2].getY(), gap, 3 * boxHeight / 4);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft + 3 * boxWidth + gap, _vetoWorldRectanglesArrayList.get(internalUpstreamUpperIndex - 2).getY(), gap, 3 * boxHeight / 4));
 		
 		// Internal Downstream Far Bottom
-		_vetoWorldRectangles[12] = new Rectangle2D.Double(barLeft + 3 * boxWidth + gap, _vetoWorldRectangles[1].getY(), gap, 3 * boxHeight / 4);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft + 3 * boxWidth + gap, _vetoWorldRectanglesArrayList.get(internalUpstreamUpperIndex - 3).getY(), gap, 3 * boxHeight / 4));
+		int internalDownstreamFarBottomIndex = _vetoWorldRectanglesArrayList.size() - 1;
 		
 		/*
 		 * Internal Bottom Vetoes
 		 */
 		
 		// Internal Bottom Far Right
-		_vetoWorldRectangles[13] = new Rectangle2D.Double(_vetoWorldRectangles[8].getX(), barBottom - 2 * gap, 3 * boxWidth / 4, gap);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(_vetoWorldRectanglesArrayList.get(internalTopUpperIndex).getX(), barBottom - 2 * gap, 3 * boxWidth / 4, gap));
 		
 		// Internal Bottom Right
-		_vetoWorldRectangles[14] = new Rectangle2D.Double(_vetoWorldRectangles[7].getX(), barBottom - 2 * gap, 3 * boxWidth / 4, gap);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(_vetoWorldRectanglesArrayList.get(internalTopUpperIndex - 1).getX(), barBottom - 2 * gap, 3 * boxWidth / 4, gap));
 		
 		// Internal Bottom Left
-		_vetoWorldRectangles[15] = new Rectangle2D.Double(_vetoWorldRectangles[6].getX(), barBottom - 2 * gap, 3 * boxWidth / 4, gap);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(_vetoWorldRectanglesArrayList.get(internalTopUpperIndex - 2).getX(), barBottom - 2 * gap, 3 * boxWidth / 4, gap));
 		
 		// Internal Bottom Far Left
-		_vetoWorldRectangles[16] = new Rectangle2D.Double(_vetoWorldRectangles[5].getX(), barBottom - 2 * gap, 3 * boxWidth / 4, gap);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(_vetoWorldRectanglesArrayList.get(internalTopUpperIndex - 3).getX(), barBottom - 2 * gap, 3 * boxWidth / 4, gap));
 		
 		/*
 		 * Internal Caps
 		 */
 		
 		// Internal Left
-		_vetoWorldRectangles[17] = new Rectangle2D.Double(left + (3 * boxWidth) + 3 * gap, _vetoWorldRectangles[1].getY(), 3 * boxWidth + gap, _vetoWorldRectangles[1].getHeight() + _vetoWorldRectangles[2].getHeight() + _vetoWorldRectangles[3].getHeight() + _vetoWorldRectangles[4].getHeight());
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(left + (3 * boxWidth) + 3 * gap, _vetoWorldRectanglesArrayList.get(internalUpstreamUpperIndex - 3).getY(), 3 * boxWidth + gap, _vetoWorldRectanglesArrayList.get(internalUpstreamUpperIndex - 3).getHeight() + _vetoWorldRectanglesArrayList.get(internalUpstreamUpperIndex - 2).getHeight() + _vetoWorldRectanglesArrayList.get(internalUpstreamUpperIndex - 1).getHeight() + _vetoWorldRectanglesArrayList.get(internalUpstreamUpperIndex).getHeight()));
 		
 		// Internal Right
-		_vetoWorldRectangles[18] = new Rectangle2D.Double(right - 6 * boxWidth - 4 * gap, _vetoWorldRectangles[12].getY(), 3 * boxWidth + gap, _vetoWorldRectangles[9].getHeight() + _vetoWorldRectangles[10].getHeight() + _vetoWorldRectangles[11].getHeight() + _vetoWorldRectangles[12].getHeight());
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(right - 6 * boxWidth - 4 * gap, _vetoWorldRectanglesArrayList.get(internalDownstreamFarBottomIndex).getY(), 3 * boxWidth + gap, _vetoWorldRectanglesArrayList.get(internalDownstreamFarBottomIndex - 3).getHeight() + _vetoWorldRectanglesArrayList.get(internalDownstreamFarBottomIndex - 2).getHeight() + _vetoWorldRectanglesArrayList.get(internalDownstreamFarBottomIndex - 1).getHeight() + _vetoWorldRectanglesArrayList.get(internalDownstreamFarBottomIndex).getHeight()));
 		
 		/*
 		 * External Upstream Vetoes
 		 */
 		
 		// External Upstream Bottom
-		_vetoWorldRectangles[19] = new Rectangle2D.Double(barLeft - 4 * gap, barBottom - 2 * gap, gap, 5 * boxHeight / 2);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft - 4 * gap, barBottom - 2 * gap, gap, 5 * boxHeight / 2));
+		int externalUpstreamBottomIndex = _vetoWorldRectanglesArrayList.size() - 1;
 		
 		// External Upstream Top
-		_vetoWorldRectangles[20] = new Rectangle2D.Double(barLeft - 4 * gap, _vetoWorldRectangles[19].getY() + _vetoWorldRectangles[19].getHeight(), gap, 5 * boxHeight / 2);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft - 4 * gap, _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getY() + _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getHeight(), gap, 5 * boxHeight / 2));
+		int externalUpstreamTopIndex = _vetoWorldRectanglesArrayList.size() - 1;
 		
 		/*
 		 * External Top Vetoes
 		 */
 		
 		// External Top Left
-		_vetoWorldRectangles[21] = new Rectangle2D.Double(barLeft - 2 * gap, barBottom + 3 * boxHeight + 3 * gap, 2 * (2 * boxWidth + gap) / 3, gap);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft - 2 * gap, barBottom + 3 * boxHeight + 3 * gap, 2 * (2 * boxWidth + gap) / 3, gap));
 		
 		// External Top Middle
-		_vetoWorldRectangles[22] = new Rectangle2D.Double(_vetoWorldRectangles[21].getX() + _vetoWorldRectangles[21].getWidth(), barBottom + 3 * boxHeight + 3 * gap, 2 * (2 * boxWidth + gap) / 3, gap);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(_vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getX() + _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getWidth(), barBottom + 3 * boxHeight + 3 * gap, 2 * (2 * boxWidth + gap) / 3, gap));
 		
 		// External Top Right
-		_vetoWorldRectangles[23] = new Rectangle2D.Double(_vetoWorldRectangles[22].getX() + _vetoWorldRectangles[22].getWidth(), barBottom + 3 * boxHeight + 3 * gap, 2 * (2 * boxWidth + gap) / 3, gap);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(_vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getX() + _vetoWorldRectanglesArrayList.get(_vetoWorldRectanglesArrayList.size() - 1).getWidth(), barBottom + 3 * boxHeight + 3 * gap, 2 * (2 * boxWidth + gap) / 3, gap));
+		int externalTopUpperIndex = _vetoWorldRectanglesArrayList.size() - 1;
 		
 		/*
 		 * External Downstream Vetoes
 		 */
 		
 		// External Downstream Top
-		_vetoWorldRectangles[24] = new Rectangle2D.Double(barLeft + 3 * boxWidth + 3 * gap, _vetoWorldRectangles[20].getY(), gap, 5 * boxHeight / 2);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft + 3 * boxWidth + 3 * gap, _vetoWorldRectanglesArrayList.get(externalUpstreamTopIndex).getY(), gap, 5 * boxHeight / 2));
 		
 		// External Downstream Bottom
-		_vetoWorldRectangles[25] = new Rectangle2D.Double(barLeft + 3 * boxWidth + 3 * gap, _vetoWorldRectangles[19].getY(), gap, 5 * boxHeight / 2);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(barLeft + 3 * boxWidth + 3 * gap, _vetoWorldRectanglesArrayList.get(externalUpstreamBottomIndex).getY(), gap, 5 * boxHeight / 2));
+		int externalDownstreamUpperIndex = _vetoWorldRectanglesArrayList.size() - 1;
 		
 		/*
 		 * External Bottom Vetoes
 		 */
 		
 		// External Bottom Right
-		_vetoWorldRectangles[26] = new Rectangle2D.Double(_vetoWorldRectangles[23].getX(), barBottom - 4 * gap, 2 * (2 * boxWidth + gap) / 3, gap);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(_vetoWorldRectanglesArrayList.get(externalTopUpperIndex).getX(), barBottom - 4 * gap, 2 * (2 * boxWidth + gap) / 3, gap));
 		
 		// External Bottom Middle
-		_vetoWorldRectangles[27] = new Rectangle2D.Double(_vetoWorldRectangles[22].getX(), barBottom - 4 * gap, 2 * (2 * boxWidth + gap) / 3, gap);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(_vetoWorldRectanglesArrayList.get(externalTopUpperIndex - 1).getX(), barBottom - 4 * gap, 2 * (2 * boxWidth + gap) / 3, gap));
 		
 		// External Bottom Left
-		_vetoWorldRectangles[28] = new Rectangle2D.Double(_vetoWorldRectangles[21].getX(), barBottom - 4 * gap, 2 * (2 * boxWidth + gap) / 3, gap);
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(_vetoWorldRectanglesArrayList.get(externalTopUpperIndex - 2).getX(), barBottom - 4 * gap, 2 * (2 * boxWidth + gap) / 3, gap));
 		
 		/*
 		 * External Caps
 		 */
 		
 		// External Left
-		_vetoWorldRectangles[29] = new Rectangle2D.Double(left + gap, _vetoWorldRectangles[19].getY(), 3 * boxWidth + gap, _vetoWorldRectangles[19].getHeight() + _vetoWorldRectangles[20].getHeight());
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(left + gap, _vetoWorldRectanglesArrayList.get(externalUpstreamBottomIndex).getY(), 3 * boxWidth + gap, _vetoWorldRectanglesArrayList.get(externalUpstreamBottomIndex).getHeight() + _vetoWorldRectanglesArrayList.get(externalUpstreamTopIndex).getHeight()));
 
 		// External Right
-		_vetoWorldRectangles[30] = new Rectangle2D.Double(right - 3 * boxWidth - 2 * gap, _vetoWorldRectangles[25].getY(), 3 * boxWidth + gap, _vetoWorldRectangles[24].getHeight() + _vetoWorldRectangles[25].getHeight());
+		_vetoWorldRectanglesArrayList.add(new Rectangle2D.Double(right - 3 * boxWidth - 2 * gap, _vetoWorldRectanglesArrayList.get(externalDownstreamUpperIndex).getY(), 3 * boxWidth + gap, _vetoWorldRectanglesArrayList.get(externalDownstreamUpperIndex - 1).getHeight() + _vetoWorldRectanglesArrayList.get(externalDownstreamUpperIndex).getHeight()));
 
 	}
 
@@ -361,8 +381,8 @@ public class FullSideView extends BedView {
 				for (int bar = 0; bar < GeometricConstants.BARS; bar++) {
 					WorldGraphicsUtilities.drawWorldRectangle(g, container, _barWorldRectangles[bar], _barStyle);
 				}
-				for (int veto = 0; veto < GeometricConstants.VETOES; veto++) {
-					WorldGraphicsUtilities.drawWorldRectangle(g, container, _vetoWorldRectangles[veto], _barStyle);
+				for (int veto = 0; veto < _vetoWorldRectanglesArrayList.size(); veto++) {
+					WorldGraphicsUtilities.drawWorldRectangle(g, container, _vetoWorldRectanglesArrayList.get(veto), _barStyle);
 				}
 			}
 		};
@@ -397,8 +417,8 @@ public class FullSideView extends BedView {
 			_superLayerBars[bar] = new FullSideViewBar(detectorLayer, this, _barWorldRectangles[bar], bar);
 		}
 		
-		for (int veto = 0; veto < GeometricConstants.VETOES; veto++) {
-			_superLayerVetoes[veto] = new FullSideViewVeto(detectorLayer, this, _vetoWorldRectangles[veto], veto);
+		for (int veto = 0; veto < _vetoWorldRectanglesArrayList.size(); veto++) {
+			_superLayerVetoes[veto] = new FullSideViewVeto(detectorLayer, this, _vetoWorldRectanglesArrayList.get(veto), veto);
 		}
 	}
 
@@ -440,8 +460,8 @@ public class FullSideView extends BedView {
 			}
 		}
 		
-		for (int veto = 0; veto < GeometricConstants.VETOES; veto++) {
-			if (_vetoWorldRectangles[veto].contains(worldPoint)) {
+		for (int veto = 0; veto < _vetoWorldRectanglesArrayList.size(); veto++) {
+			if (_vetoWorldRectanglesArrayList.get(veto).contains(worldPoint)) {
 				return veto + 1;
 			}
 		}
