@@ -253,13 +253,13 @@ public class FrontViewBar extends RectangleItem {
 
 		ChargeTimeData ctData = EventManager.getInstance().getChargeTimeData();
 		if (ctData != null) {
-			hitSectors = ctData.getSector();
-			hitLayers = ctData.getLayer();
-			hitPaddles = ctData.getPaddle();
-			chargeLeft = ctData.getChargeLeft();
-			timeLeft = ctData.getTimeLeft();
-			chargeRight = ctData.getChargeRight();
-			timeRight = ctData.getTimeRight();
+			hitSectors = ctData.getSectorArray();
+			hitLayers = ctData.getLayerArray();
+			hitPaddles = ctData.getPaddleArray();
+			chargeLeft = ctData.getLeftPMTChargeArray();
+			timeLeft = ctData.getLeftPMTTimeArray();
+			chargeRight = ctData.getRightPMTChargeArray();
+			timeRight = ctData.getRightPMTTimeArray();
 			if (chargeLeft != null && chargeRight != null) {
 				chargeToEnergy();
 				for (int i = 0; i < totalE.length; i++) {

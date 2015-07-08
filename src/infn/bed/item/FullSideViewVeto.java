@@ -239,13 +239,13 @@ public class FullSideViewVeto extends RectangleItem {
 		// get the data and make sure it's not null
 		ChargeTimeData ctData = EventManager.getInstance().getChargeTimeData();
 		if (ctData != null) {
-			hitVetoSectors = ctData.getVetoSector();
-			hitIntOrExt = ctData.getVetoIntOrExt();
-			hitChannels = ctData.getVetoChannel();
-			charge1 = ctData.getVetoCharge1();
-			time1 = ctData.getVetoTime1();
-			charge2 = ctData.getVetoCharge2();
-			time2 = ctData.getVetoTime2();
+			hitVetoSectors = ctData.getVetoSectorArray();
+			hitIntOrExt = ctData.getVetoLayerArray();
+			hitChannels = ctData.getVetoChannelArray();
+			charge1 = ctData.getVetoChargeArray();
+			time1 = ctData.getVetoTimeArray();
+			charge2 = ctData.getDualSiPMVetoChargeArray();
+			time2 = ctData.getDualSiPMVetoTimeArray();
 
 			// if we have hits
 			if (charge1 != null && charge1 != null) {
