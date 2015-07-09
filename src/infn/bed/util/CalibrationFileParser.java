@@ -28,7 +28,7 @@ public class CalibrationFileParser {
 	/**
 	 * The item (scintillator bar or veto) identification number.
 	 */
-	private final int id;
+	private final int identificationNumber;
 	
 	/**
 	 * An ArrayList of item (scintillator bar or veto) tags.
@@ -48,47 +48,47 @@ public class CalibrationFileParser {
 	/**
 	 * The effective velocity.
 	 */
-	private double v_eff;
+	private double effectiveVelocity;
 	
 	/**
 	 * The left ADC (analog-to-digital converter) conversion factor.
 	 */
-	private double a_left;
+	private double leftADCConversionFactor;
 	
 	/**
 	 * The right ADC (analog-to-digital converter) conversion factor.
 	 */
-	private double a_right;
+	private double rightADCConversionFactor;
 	
 	/**
 	 * The attenuation length.
 	 */
-	private double lambda;
+	private double attenuationLength;
 	
 	/**
 	 * The left shift.
 	 */
-	private double delta_L;
+	private double leftShift;
 	
 	/**
 	 * The right shift.
 	 */
-	private double delta_R;
+	private double rightShift;
 	
 	/**
 	 * The left TDC (time-to-digital converter) conversion factor.
 	 */
-	private double t_left;
+	private double leftTDCConversionFactor;
 	
 	/**
 	 * The right TDC (time-to-digital converter) conversion factor.
 	 */
-	private double t_right;
+	private double rightTDCConversionFactor;
 	
 	/**
 	 * The item (scintillator bar or veto) length.
 	 */
-	private double l;
+	private double itemLength;
 	
 	/**
 	 * The constructor.
@@ -99,13 +99,13 @@ public class CalibrationFileParser {
 	 * 
 	 * @param file The file to parse.
 	 * @param item The item name (b for scintillator bar or v for veto).
-	 * @param id The identification number of the item.
+	 * @param identificationNumber The identification number of the item.
 	 * @throws InvalidCalibrationFileException If _isValidCalibrationFile() returns false, an unchecked exception is thrown.
 	 */
-	public CalibrationFileParser(File file, String item, int id) {
+	public CalibrationFileParser(File file, String item, int identificationNumber) {
 		this.file = file;
 		this.item = item;
-		this.id = id;
+		this.identificationNumber = identificationNumber;
 		_populateValidationArray();
 		if (_isValidCalibrationFile()) {
 			_parseCalibrationFile();
@@ -178,7 +178,7 @@ public class CalibrationFileParser {
 			try {
 				FileReader fileReader = new FileReader(file);
 				BufferedReader bufferedReader = new BufferedReader(fileReader);
-				String tag = item + id;
+				String tag = item + identificationNumber;
 				boolean found = false;
 				while (!found) {
 					String s = bufferedReader.readLine();
@@ -189,15 +189,15 @@ public class CalibrationFileParser {
 							String[] tokens = _format(s).split(delimiter);
 							if (tokens[0].equals(tag)) {
 								found = true;
-								v_eff = Double.parseDouble(tokens[1]);
-								a_left = Double.parseDouble(tokens[2]);
-								a_right = Double.parseDouble(tokens[3]);
-								lambda = Double.parseDouble(tokens[4]);
-								delta_L = Double.parseDouble(tokens[5]);
-								delta_R = Double.parseDouble(tokens[6]);
-								t_left = Double.parseDouble(tokens[7]);
-								t_right = Double.parseDouble(tokens[8]);
-								l = Double.parseDouble(tokens[9]);
+								effectiveVelocity        = Double.parseDouble(tokens[1]);
+								leftADCConversionFactor  = Double.parseDouble(tokens[2]);
+								rightADCConversionFactor = Double.parseDouble(tokens[3]);
+								attenuationLength        = Double.parseDouble(tokens[4]);
+								leftShift                = Double.parseDouble(tokens[5]);
+								rightShift               = Double.parseDouble(tokens[6]);
+								leftTDCConversionFactor  = Double.parseDouble(tokens[7]);
+								rightTDCConversionFactor = Double.parseDouble(tokens[8]);
+								itemLength               = Double.parseDouble(tokens[9]);
 								bufferedReader.close();
 							}
 						}
@@ -212,82 +212,82 @@ public class CalibrationFileParser {
 	/**
 	 * Returns the effective velocity.
 	 * 
-	 * @return v_eff The effective velocity;
+	 * @return effectiveVelocity The effective velocity;
 	 */
 	public double getEffectiveVelocity() {
-		return v_eff;
+		return effectiveVelocity;
 	}
 	
 	/**
 	 * Returns the left ADC (analog-to-digital converter) conversion factor.
 	 * 
-	 * @return a_left The left ADC (analog-to-digital converter) conversion factor.
+	 * @return leftADCConversionFactor The left ADC (analog-to-digital converter) conversion factor.
 	 */
 	public double getLeftADCConversionFactor() {
-		return a_left;
+		return leftADCConversionFactor;
 	}
 	
 	/**
 	 * Returns the right ADC (analog-to-digital converter) conversion factor.
 	 * 
-	 * @return a_right The right ADC (analog-to-digital converter) conversion factor.
+	 * @return rightADCConversionFactor The right ADC (analog-to-digital converter) conversion factor.
 	 */
 	public double getRightADCConversionFactor() {
-		return a_right;
+		return rightADCConversionFactor;
 	}
 	
 	/**
 	 * Returns the attenuation length.
 	 * 
-	 * @return lambda The attenuation length.
+	 * @return attenuationLength The attenuation length.
 	 */
 	public double getAttenuationLength() {
-		return lambda;
+		return attenuationLength;
 	}
 	
 	/**
 	 * Returns the left shift.
 	 * 
-	 * @return delta_L The left shift.
+	 * @return leftShift The left shift.
 	 */
 	public double getLeftShift() {
-		return delta_L;
+		return leftShift;
 	}
 	
 	/**
 	 * Returns the right shift.
 	 * 
-	 * @return delta_R The right shift.
+	 * @return rightShift The right shift.
 	 */
 	public double getRightShift() {
-		return delta_R;
+		return rightShift;
 	}
 	
 	/**
 	 * Returns the left TDC (time-to-digital converter) conversion factor.
 	 * 
-	 * @return t_left The left TDC (time-to-digital converter) conversion factor.
+	 * @return leftTDCConversionFactor The left TDC (time-to-digital converter) conversion factor.
 	 */
 	public double getLeftTDCConversionFactor() {
-		return t_left;
+		return leftTDCConversionFactor;
 	}
 	
 	/**
 	 * Returns the right TDC (time-to-digital converter) conversion factor.
 	 * 
-	 * @return t_right The right TDC (time-to-digital converter) conversion factor.
+	 * @return rightTDCConversionFactor The right TDC (time-to-digital converter) conversion factor.
 	 */
 	public double getRightTDCConversionFactor() {
-		return t_right;
+		return rightTDCConversionFactor;
 	}
 	
 	/**
 	 * Returns the item (scintillator bar or veto) length.
 	 * 
-	 * @return l The item (scintillator bar or veto) length.
+	 * @return itemLength The item (scintillator bar or veto) length.
 	 */
 	public double getItemLength() {
-		return l;
+		return itemLength;
 	}
 	
 }
