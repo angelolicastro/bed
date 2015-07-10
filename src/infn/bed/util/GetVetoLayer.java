@@ -23,7 +23,7 @@ public class GetVetoLayer {
 		if (veto > 0 && veto <= GeometricConstants.VETOES) {
 			if (veto <= GeometricConstants.CRYSTALS) {
 				return 1;
-			} else if (veto <= GeometricConstants.INTERNAL_VETOES + 1) {
+			} else if (veto <= GeometricConstants.CRYSTALS + GeometricConstants.INTERNAL_VETOES) {
 				return 2;
 			} else if (veto <= GeometricConstants.VETOES) {
 				return 3;
