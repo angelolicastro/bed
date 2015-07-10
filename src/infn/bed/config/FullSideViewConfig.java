@@ -5,6 +5,11 @@ import java.awt.Color;
 /**
  * Defines miscellaneous Full Side View configuration directives.
  * 
+ * <p>
+ * NOTE: The color palette defined in this file is the color palette of Primer (http://primercss.io/).
+ * Primer (and the following branding color palette) is Copyright GitHub, Inc.
+ * </p>
+ * 
  * @author Angelo Licastro
  */
 public class FullSideViewConfig {
