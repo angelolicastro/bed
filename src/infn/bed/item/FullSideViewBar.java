@@ -1,5 +1,6 @@
 package infn.bed.item;
 
+import infn.bed.config.FullSideViewConfig;
 import infn.bed.event.ChargeTimeData;
 import infn.bed.event.EventManager;
 import infn.bed.math.MathematicalConstants;
@@ -174,7 +175,7 @@ public class FullSideViewBar extends RectangleItem {
 		_view = view;
 
 		_style.setFillColor(Color.white);
-		_style.setLineColor(Color.black);
+		_style.setLineColor(FullSideViewConfig.BARS_LINE_COLOR);
 		_bar = bar + 1;
 
 		_name = "Bar: " + _bar;

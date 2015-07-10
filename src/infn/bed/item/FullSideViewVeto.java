@@ -1,7 +1,9 @@
 package infn.bed.item;
 
+import infn.bed.config.FullSideViewConfig;
 import infn.bed.event.ChargeTimeData;
 import infn.bed.event.EventManager;
+import infn.bed.geometry.GeometricConstants;
 import infn.bed.math.MathematicalConstants;
 import infn.bed.util.CalibrationFileParser;
 import infn.bed.util.GetVetoLayer;
@@ -168,12 +170,8 @@ public class FullSideViewVeto extends RectangleItem {
 		_view = view;
 		
 		_style.setFillColor(Color.white);
-		_style.setLineColor(Color.black);
-		// TODO: TIDY
-		// The internal upstream vetoes (vetoes 1, 2, 3, and 4 in one-based indexing) are optically
-		// decoupled, so they are given the distinction of a thicker line width.
-		if (veto == 1 || veto == 2 || veto == 3 || veto == 4) _style.setLineWidth(3);
 		_veto = veto + 1;
+		if (isInternalUpstreamVeto()) _style.setLineWidth(3);
 
 		_name = "Veto: " + _veto;
 	}
@@ -218,7 +216,7 @@ public class FullSideViewVeto extends RectangleItem {
 		}
 
 		// just to make clean
-		g.setColor(_style.getLineColor());
+		g.setColor(getLineColor());
 		g.drawPolygon(_lastDrawnPolygon);
 	}
 
@@ -234,7 +232,7 @@ public class FullSideViewVeto extends RectangleItem {
 
 		// draw default, blank rectangle
 		WorldGraphicsUtilities.drawWorldRectangle(g, container,
-				_worldRectangle, Color.white, _style.getLineColor());
+				_worldRectangle, Color.white, getLineColor());
 
 		// get the data and make sure it's not null
 		ChargeTimeData ctData = EventManager.getInstance().getChargeTimeData();
@@ -276,7 +274,7 @@ public class FullSideViewVeto extends RectangleItem {
 														0,
 														(int) Math
 																.ceil(255 - scale * 255)),
-												_style.getLineColor());
+												getLineColor());
 							} catch (Exception e) {
 								WorldGraphicsUtilities.drawWorldRectangle(g,
 										container, _worldRectangle, new Color(
@@ -495,6 +493,34 @@ public class FullSideViewVeto extends RectangleItem {
 	 *            The list of feedback strings
 	 */
 	private void accumulatedFeedbackStrings(List<String> feedbackStrings) {
+	}
+	
+	/**
+	 * Returns the line color of the veto.
+	 * 
+	 * @return The line color of the veto.
+	 */
+	private Color getLineColor() {
+		if (GetVetoLayer.getVetoLayer(_veto) == 1) {
+			return FullSideViewConfig.CRYSTALS_LINE_COLOR;
+		} else if (GetVetoLayer.getVetoLayer(_veto) == 2) {
+			return FullSideViewConfig.INTERNAL_VETOES_LINE_COLOR;
+		} else if (GetVetoLayer.getVetoLayer(_veto) == 3) {
+			return FullSideViewConfig.EXTERNAL_VETOES_LINE_COLOR;
+		}
+		return new Color(0, 0, 0);
+	}
+	
+	/**
+	 * Returns true if the veto is an internal upstream veto, false otherwise.
+	 * 
+	 * @return true if the veto is an internal upstream veto, false otherwise.
+	 */
+	private boolean isInternalUpstreamVeto() {
+		if (_veto >= GeometricConstants.CRYSTALS + 1 && _veto <= GeometricConstants.CRYSTALS + 4) {
+			return true;
+		}
+		return false;
 	}
 
 }
