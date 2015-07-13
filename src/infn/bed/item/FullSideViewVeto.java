@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.List;
 
 import cnuphys.bCNU.event.EventControl;
+import cnuphys.bCNU.format.DoubleFormat;
 import cnuphys.bCNU.graphics.container.IContainer;
 import cnuphys.bCNU.graphics.world.WorldGraphicsUtilities;
 import cnuphys.bCNU.item.RectangleItem;
@@ -27,9 +28,7 @@ import cnuphys.bCNU.layer.LogicalLayer;
 import cnuphys.bCNU.util.Fonts;
 
 /**
- * This class handles converting charge-time information to energy-time
- * information for vetoes. It then draws rectangles and colors them if they are
- * hit. It displays energy-time information for each veto in the info panel.
+ * Draws the Full Side View veto rectangles and hits.
  * 
  * @author Andy Beiter
  * @author Angelo Licastro
@@ -37,249 +36,207 @@ import cnuphys.bCNU.util.Fonts;
 public class FullSideViewVeto extends RectangleItem {
 
 	/**
-	 * Font for label text
+	 * The font of the label text.
 	 */
-	private static final Font labelFont = Fonts.commonFont(Font.PLAIN, 11);
+	private static final Font labelTextFont = Fonts.commonFont(Font.PLAIN, 11);
 
 	/**
-	 * The number of the veto
+	 * The number of the veto.
 	 */
-	private int _veto;
+	private final int _veto;
 
 	/**
-	 * The array of the hit sectors (detectors)
+	 * An array of hit sectors (detectors).
 	 */
-	private int hitVetoSectors[];
+	private int sectorArray[];
 
 	/**
-	 * The array that indicates if a hit veto is internal or external
+	 * An array of hit layers (internal or external).
 	 */
-	private int hitIntOrExt[];
+	private int layerArray[];
 
 	/**
-	 * The array that indicates which internal or external veto was hit
+	 * An array of hit channels.
 	 */
-	private int hitChannels[];
+	private int channelArray[];
 
 	/**
-	 * The array of the charges from the primary PMTs
+	 * An array of hit charges.
 	 */
-	private int charge1[];
+	private int chargeArray[];
 
 	/**
-	 * The array of the charges from the secondary PMTs
+	 * An array of dual SiPM (silicon photomultiplier) hit charges.
 	 */
-	private int charge2[];
+	private int dualSiPMChargeArray[];
 
 	/**
-	 * The array of the times from the primary PMTs
+	 * An array of hit times.
 	 */
-	private int time1[];
+	private int timeArray[];
 
 	/**
-	 * The array of the times from the secondary PMTs
+	 * An array of dual SiPM (silicon photomultiplier) hit times.
 	 */
-	private int time2[];
+	private int dualSiPMTimeArray[];
 
 	/**
-	 * The array of energies from each hit
+	 * An array of total hit energies.
 	 */
-	private double totalE[];
+	private double totalEnergyArray[];
 
 	/**
-	 * The array of times from each hit
+	 * An array of total hit times.
 	 */
-	private double totalT[];
+	private double totalTimeArray[];
 
 	/**
-	 * The effective speed of light in the veto
+	 * The effective velocity.
 	 */
-	private double v_eff;
+	private double effectiveVelocity;
 
 	/**
-	 * The charge-to-energy conversion factor for the primary PMT for the veto
+	 * The left ADC (analog-to-digital converter) conversion factor.
 	 */
-	private double a_left;
+	private double leftADCConversionFactor;
 
 	/**
-	 * The charge-to-energy conversion factor for the secondary PMT for the veto
+	 * The right ADC (analog-to-digital converter) conversion factor.
 	 */
-	private double a_right;
+	private double rightADCConversionFactor;
 
 	/**
-	 * The attenuation length
+	 * The attenuation length.
 	 */
-	private double lambda;
+	private double attenuationLength;
 
 	/**
-	 * Time delay for the primary PMT
+	 * The left shift.
 	 */
-	private double delta_L;
+	private double leftShift;
 
 	/**
-	 * Time delay for the secondary PMT
+	 * The right shift.
 	 */
-	private double delta_R;
+	private double rightShift;
 
 	/**
-	 * The tdc-to-time conversion factor for the primary PMT for the veto
+	 * The left TDC (time-to-digital converter) conversion factor.
 	 */
-	private double t_left;
+	private double leftTDCConversionFactor;
 
 	/**
-	 * The tdc-to-time conversion factor for the secondary PMT for the veto
+	 * The right TDC (time-to-digital converter) conversion factor.
 	 */
-	private double t_right;
+	private double rightTDCConversionFactor;
 
 	/**
-	 * The length of the veto
+	 * The veto length.
 	 */
-	private double l;
+	private double vetoLength;
 
 	/**
-	 * The view this veto is in
+	 * The view that contains the veto.
 	 */
-	private FullSideView _view;
+	private final FullSideView _view;
 
 	/**
-	 * Upper energy level (MeV) for color scaling
+	 * The world that contains the veto.
 	 */
-	private static final float upperEnergyScale = MathematicalConstants.UPPER_ENERGY_LIMIT;
+	private final Rectangle2D.Double _worldRectangle;
 
 	/**
-	 * The rectangle the veto is drawn in
-	 */
-	private Rectangle2D.Double _worldRectangle;
-
-	/**
-	 * Constructor for the veto used in the full side view
+	 * The constructor.
 	 * 
-	 * @param layer
-	 *            the Layer this item is on.
-	 * @param view
-	 *            the FullSideView parent
-	 * @param worldRectangle
-	 *            the rectangle the veto is in
-	 * @param veto
-	 *            the veto (0-13)
+	 * @param layer The layer that contains the veto.
+	 * @param view The view that contains the veto.
+	 * @param worldRectangle The world that contains the veto.
+	 * @param veto The number of the veto in zero-based indexing.
 	 */
-	public FullSideViewVeto(LogicalLayer layer, FullSideView view,
-			Rectangle2D.Double worldRectangle, int veto) {
+	public FullSideViewVeto(LogicalLayer layer, FullSideView view, Rectangle2D.Double worldRectangle, int veto) {
 		super(layer, worldRectangle);
-		_worldRectangle = worldRectangle;
+		
 		_view = view;
+		_worldRectangle = worldRectangle;
+		_veto = veto + 1;
+		_name = "Veto: " + _veto;
 		
 		_style.setFillColor(Color.white);
-		_veto = veto + 1;
-		if (isInternalUpstreamVeto()) _style.setLineWidth(3);
-
-		_name = "Veto: " + _veto;
+		
+		if (isInternalUpstreamVeto()) {
+			_style.setLineWidth(3);
+		}
 	}
 
 	/**
-	 * Gets the calibration constants from a file and stores them
+	 * Retrieves the calibration constants of the veto.
+	 * 
+	 * @param file A calibration file.
 	 */
 	public void getConstants(File file) {
 		CalibrationFileParser calibrationFileParser = new CalibrationFileParser(file, "v", _veto);
-		v_eff = calibrationFileParser.getEffectiveVelocity();
-		a_left = calibrationFileParser.getLeftADCConversionFactor();
-		a_right = calibrationFileParser.getRightADCConversionFactor();
-		lambda = calibrationFileParser.getAttenuationLength();
-		delta_L = calibrationFileParser.getLeftShift();
-		delta_R = calibrationFileParser.getRightShift();
-		t_left = calibrationFileParser.getLeftTDCConversionFactor();
-		t_right = calibrationFileParser.getRightTDCConversionFactor();
-		l = calibrationFileParser.getItemLength();
+		effectiveVelocity        = calibrationFileParser.getEffectiveVelocity();
+		leftADCConversionFactor  = calibrationFileParser.getLeftADCConversionFactor();
+		rightADCConversionFactor = calibrationFileParser.getRightADCConversionFactor();
+		attenuationLength        = calibrationFileParser.getAttenuationLength();
+		leftShift                = calibrationFileParser.getLeftShift();
+		rightShift               = calibrationFileParser.getRightShift();
+		leftTDCConversionFactor  = calibrationFileParser.getLeftTDCConversionFactor();
+		rightTDCConversionFactor = calibrationFileParser.getRightTDCConversionFactor();
+		vetoLength               = calibrationFileParser.getItemLength();
 	}
 
 	/**
-	 * Custom drawer for the veto.
+	 * Draws the veto.
 	 * 
-	 * @param g
-	 *            the graphics context.
-	 * @param container
-	 *            the graphical container being rendered.
+	 * @param g The graphics context.
+	 * @param container The graphics container that is being rendered.
 	 */
 	@Override
 	public void drawItem(Graphics g, IContainer container) {
 		if (EventControl.getInstance().isAccumulating()) {
 			return;
 		}
+		
 		super.drawItem(g, container);
-		g.setFont(labelFont);
-		g.setColor(Color.yellow);
-		// now the data
+		g.setFont(labelTextFont);
+
 		if (_view.getMode() == BedView.Mode.SINGLE_EVENT) {
 			singleEventDrawItem(g, container);
 		} else {
 			accumulatedDrawItem(g, container);
 		}
-
-		// just to make clean
-		g.setColor(getLineColor());
-		g.drawPolygon(_lastDrawnPolygon);
 	}
 
 	/**
-	 * Draw in single event mode
+	 * Draws the single event mode hits.
 	 * 
-	 * @param g
-	 *            the graphics context
-	 * @param container
-	 *            the rendering container
+	 * @param g The graphics context.
+	 * @param container The graphics container that is being rendered.
 	 */
 	private void singleEventDrawItem(Graphics g, IContainer container) {
+		WorldGraphicsUtilities.drawWorldRectangle(g, container, _worldRectangle, Color.white, getLineColor());
+		
+		ChargeTimeData chargeTimeData = EventManager.getInstance().getChargeTimeData();
+		if (chargeTimeData != null) {
+			sectorArray         = chargeTimeData.getVetoSectorArray();
+			layerArray          = chargeTimeData.getVetoLayerArray();
+			channelArray        = chargeTimeData.getVetoChannelArray();
+			chargeArray         = chargeTimeData.getVetoChargeArray();
+			timeArray           = chargeTimeData.getVetoTimeArray();
+			dualSiPMChargeArray = chargeTimeData.getDualSiPMVetoChargeArray();
+			dualSiPMTimeArray   = chargeTimeData.getDualSiPMVetoTimeArray();
 
-		// draw default, blank rectangle
-		WorldGraphicsUtilities.drawWorldRectangle(g, container,
-				_worldRectangle, Color.white, getLineColor());
-
-		// get the data and make sure it's not null
-		ChargeTimeData ctData = EventManager.getInstance().getChargeTimeData();
-		if (ctData != null) {
-			hitVetoSectors = ctData.getVetoSectorArray();
-			hitIntOrExt = ctData.getVetoLayerArray();
-			hitChannels = ctData.getVetoChannelArray();
-			charge1 = ctData.getVetoChargeArray();
-			time1 = ctData.getVetoTimeArray();
-			charge2 = ctData.getDualSiPMVetoChargeArray();
-			time2 = ctData.getDualSiPMVetoTimeArray();
-
-			// if we have hits
-			if (charge1 != null && charge1 != null) {
-
-				// convert to energy
+			if (chargeArray != null) {
 				chargeToEnergy();
-
-				for (int i = 0; i < totalE.length; i++) {
-
-					// if the hits are in this veto
-					if (inThisVeto(hitVetoSectors[i], hitIntOrExt[i],
-							hitChannels[i])) {
-
-						// if the energy is above 0 (extra check)
-						if (totalE[i] > 0) {
-
-							// draw red rectangle
-							double scale = totalE[i] / upperEnergyScale;
+				for (int i = 0; i < totalEnergyArray.length; i++) {
+					if (inThisVeto(sectorArray[i], layerArray[i], channelArray[i])) {
+						if (totalEnergyArray[i] > 0) {
+							double scaleFactor = totalEnergyArray[i] / MathematicalConstants.UPPER_ENERGY_LIMIT;
 							try {
-								WorldGraphicsUtilities
-										.drawWorldRectangle(
-												g,
-												container,
-												_worldRectangle,
-												new Color(
-														(int) (Math
-																.ceil(scale * 255)),
-														0,
-														(int) Math
-																.ceil(255 - scale * 255)),
-												getLineColor());
+								WorldGraphicsUtilities.drawWorldRectangle(g, container, _worldRectangle, new Color((int)(Math.ceil(scaleFactor * 255)), 0, (int)Math.ceil(255 - scaleFactor * 255)), getLineColor());
 							} catch (Exception e) {
-								WorldGraphicsUtilities.drawWorldRectangle(g,
-										container, _worldRectangle, new Color(
-												255, 0, 0), _style
-												.getLineColor());
+								WorldGraphicsUtilities.drawWorldRectangle(g, container, _worldRectangle, new Color(255, 0, 0), _style.getLineColor());
 							}
 						}
 					}
@@ -289,70 +246,60 @@ public class FullSideViewVeto extends RectangleItem {
 	}
 
 	/**
-	 * Converts the charge-time information to energy-time information. The
-	 * algorithm is the same as the bars for the top and bottom external vetoes
-	 * since they have a PMT on each side, but for the other vetoes, we just use
-	 * the conversion factor because we are mainly just using them as a
-	 * true/false for hits.
+	 * Converts charge-time information to energy-time information.
 	 */
 	private void chargeToEnergy() {
-		// these are external top and bottom vetoes which had ADC/TDC left and
-		// right
 		if (_veto == 8 || _veto == 9 || _veto == 11 || _veto == 12) {
-			double t_l[] = new double[time1.length];
-			double t_r[] = new double[time2.length];
-			for (int i = 0; i < time1.length; i++) {
-				t_l[i] = (time1[i] * 1.0 / t_left) - delta_L;
+			double leftTimeArray[] = new double[timeArray.length];
+			double rightTimeArray[] = new double[dualSiPMTimeArray.length];
+			for (int i = 0; i < timeArray.length; i++) {
+				leftTimeArray[i] = (timeArray[i] / leftTDCConversionFactor) - leftShift;
 			}
-			for (int i = 0; i < time2.length; i++) {
-				t_r[i] = (time2[i] * 1.0 / t_right) - delta_R;
+			for (int i = 0; i < dualSiPMTimeArray.length; i++) {
+				rightTimeArray[i] = (dualSiPMTimeArray[i] / rightTDCConversionFactor) - rightShift;
 			}
-			double posFromLeft[] = new double[charge1.length];
-			for (int i = 0; i < posFromLeft.length; i++) {
-				posFromLeft[i] = (v_eff * (t_l[i] - t_r[i]) + l) / 2.0;
+			double positionFromLeftArray[] = new double[chargeArray.length];
+			for (int i = 0; i < positionFromLeftArray.length; i++) {
+				positionFromLeftArray[i] = (effectiveVelocity * (leftTimeArray[i] - rightTimeArray[i]) + vetoLength) / 2;
 			}
-			double e_l[] = new double[charge1.length];
-			double e_r[] = new double[charge2.length];
-			for (int i = 0; i < e_l.length; i++) {
-				e_l[i] = charge1[i] * a_left;
+			double leftEnergyArray[] = new double[chargeArray.length];
+			double rightEnergyArray[] = new double[dualSiPMChargeArray.length];
+			for (int i = 0; i < leftEnergyArray.length; i++) {
+				leftEnergyArray[i] = chargeArray[i] * leftADCConversionFactor;
 			}
-			for (int i = 0; i < e_r.length; i++) {
-				e_r[i] = charge2[i] * a_right;
+			for (int i = 0; i < rightEnergyArray.length; i++) {
+				rightEnergyArray[i] = dualSiPMChargeArray[i] * rightADCConversionFactor;
 			}
-			totalE = new double[e_l.length];
-			totalT = new double[t_l.length];
-			for (int i = 0; i < totalE.length; i++) {
-				double e_l_prime = e_l[i] * Math.exp(posFromLeft[i] / lambda);
-				double e_r_prime = e_r[i]
-						* Math.exp((l - posFromLeft[i]) / lambda);
-				totalE[i] = (e_l_prime + e_r_prime) / 2;
-				totalT[i] = (t_l[i] + t_r[i] - (l / v_eff)) / 2.0;
+			totalEnergyArray = new double[leftEnergyArray.length];
+			totalTimeArray = new double[leftTimeArray.length];
+			for (int i = 0; i < totalEnergyArray.length; i++) {
+				double leftEnergyPrime = leftEnergyArray[i] * Math.exp(positionFromLeftArray[i] / attenuationLength);
+				double rightEnergyPrime = rightEnergyArray[i] * Math.exp((vetoLength - positionFromLeftArray[i]) / attenuationLength);
+				totalEnergyArray[i] = (leftEnergyPrime + rightEnergyPrime) / 2;
+				totalTimeArray[i] = (leftTimeArray[i] + rightTimeArray[i] - (vetoLength / effectiveVelocity)) / 2;
 			}
-		} else { // internal vetoes and remaining external vetoes
-			totalE = new double[charge1.length];
-			totalT = new double[time1.length];
-			for (int i = 0; i < totalT.length; i++) {
-				totalT[i] = time1[i] * 1.0 / t_left;
+		} else {
+			totalEnergyArray = new double[chargeArray.length];
+			totalTimeArray = new double[timeArray.length];
+			for (int i = 0; i < totalTimeArray.length; i++) {
+				totalTimeArray[i] = timeArray[i] / leftTDCConversionFactor;
 			}
-			for (int i = 0; i < totalE.length; i++) {
-				totalE[i] = charge1[i] * a_left;
+			for (int i = 0; i < totalEnergyArray.length; i++) {
+				totalEnergyArray[i] = chargeArray[i] * leftADCConversionFactor;
 			}
 		}
 	}
 
 	/**
-	 * Checks if a given sector/intOrExt/channel is this veto
+	 * Returns true if the sector, layer, and channel combination is this veto, false otherwise.
 	 * 
-	 * @param sector
-	 *            Which detector (currently not used)
-	 * @param intOrExt
-	 *            1 if interior, 2 if exterior
-	 * @param channel
-	 *            Which interior or exterior veto
-	 * @return True if the s/ie/c is this veto, false if not
+	 * @param sector The number of the sector.
+	 * @param layer The number of the layer (1 if the layer is interior or 2 if the layer is exterior).
+	 * @param channel The number of the channel.
+	 * @return true if the sector, layer, and channel combination is this veto, false otherwise.
 	 */
-	private boolean inThisVeto(int sector, int intOrExt, int channel) {
-		switch (intOrExt) {
+	private boolean inThisVeto(int sector, int layer, int channel) {
+		switch (layer) {
 		case 1:
 			switch (channel) {
 			case 0:
@@ -394,106 +341,83 @@ public class FullSideViewVeto extends RectangleItem {
 	}
 
 	/**
-	 * Draw hits in accumulated mode
+	 * Draws the accumulated mode hits.
 	 * 
-	 * Currently unused
-	 * 
-	 * @param g
-	 *            the graphics context
-	 * @param container
-	 *            the rendering container
+	 * @param g The graphics context.
+	 * @param container The graphics container that is being rendered.
 	 */
-	private void accumulatedDrawItem(Graphics g, IContainer container) {
-	}
+	private void accumulatedDrawItem(Graphics g, IContainer container) { }
 
 	/**
 	 * Add any appropriate feedback strings for the heads-up display or feedback
 	 * panel.
 	 * 
-	 * @param container
-	 *            the Base container.
-	 * @param screenPoint
-	 *            the mouse location.
-	 * @param worldPoint
-	 *            the corresponding world point.
-	 * @param feedbackStrings
-	 *            the List of feedback strings to add to.
+	 * @param container The graphics container that is being rendered.
+	 * @param screenPoint The location of the mouse.
+	 * @param worldPoint A point in the corresponding world.
+	 * @param feedbackStringList A list of feedback strings.
 	 */
 	@Override
-	public void getFeedbackStrings(IContainer container, Point screenPoint,
-			Point2D.Double worldPoint, List<String> feedbackStrings) {
+	public void getFeedbackStrings(IContainer container, Point screenPoint, Point2D.Double worldPoint, List<String> feedbackStringList) {
 		if (_worldRectangle.contains(worldPoint)) {
 			int vetoLayer = GetVetoLayer.getVetoLayer(_veto);
-			String feedbackString = (vetoLayer == 1 ? "Crystal: " : (vetoLayer == 2 ? "Internal Veto: " : "External Veto: ")) + _veto;
-			feedbackStrings.add(feedbackString);
+			String feedbackString = "\n" + (vetoLayer == 1 ? "Crystal n." : (vetoLayer == 2 ? "Internal Veto n." : "External Veto n.")) + _veto + "\n";
+			feedbackStringList.add(feedbackString);
 			if (_view.getMode() == BedView.Mode.SINGLE_EVENT) {
-				singleEventFeedbackStrings(feedbackStrings);
+				singleEventFeedbackStrings(feedbackStringList);
 			} else {
-				accumulatedFeedbackStrings(feedbackStrings);
+				accumulatedFeedbackStrings(feedbackStringList);
 			}
-			/*
-			 * double x = 0; double y = worldPoint.y; double z = 3 -
-			 * worldPoint.x; z *= 10; y *= 10;
-			 * 
-			 * String rtp = "approx xyz " + DoubleFormat.doubleFormat(x, 1) +
-			 * "cm, " + DoubleFormat.doubleFormat(y, 1) + "cm, " +
-			 * DoubleFormat.doubleFormat(z, 1) + "cm"; feedbackStrings.add(rtp);
-			 */
+			 double x = 0;
+			 double y = worldPoint.y * 10;
+			 double z = (3 - worldPoint.x) * 10;
+			 String approximateWorldLocation = "\nApproximate World Location:\nx = " + DoubleFormat.doubleFormat(x, 1) + " cm\ny = " + DoubleFormat.doubleFormat(y, 1) + " cm\nz = " + DoubleFormat.doubleFormat(z, 1) + " cm\n";
+			 feedbackStringList.add(approximateWorldLocation);
 		}
 	}
 
 	/**
-	 * Get the feedback strings for single event mode. Displays energy and time
-	 * for each hit.
+	 * Collects the single event mode feedback strings.
 	 * 
-	 * @param feedbackStrings
-	 *            The list of feedback strings
+	 * @param feedbackStringList A list of feedback strings.
 	 */
-	private void singleEventFeedbackStrings(List<String> feedbackStrings) {
-
+	private void singleEventFeedbackStrings(List<String> feedbackStringList) {
 		if (EventManager.getInstance().getChargeTimeData() != null) {
-			if (totalE != null) {
+			if (totalEnergyArray != null) {
 				int hits = 0;
-				double vetoE = 0;
-				boolean hit[] = new boolean[totalE.length];
-				for (int i = 0; i < totalE.length; i++) {
-					if (inThisVeto(hitVetoSectors[i], hitIntOrExt[i],
-							hitChannels[i])) {
-						if (totalE[i] > 0) {
+				double vetoEnergy = 0;
+				boolean hitArray[] = new boolean[totalEnergyArray.length];
+				for (int i = 0; i < totalEnergyArray.length; i++) {
+					if (inThisVeto(sectorArray[i], layerArray[i], channelArray[i])) {
+						if (totalEnergyArray[i] > 0) {
 							hits++;
-							vetoE += totalE[i];
-							hit[i] = true;
+							vetoEnergy = vetoEnergy + totalEnergyArray[i];
+							hitArray[i] = true;
 						} else {
-							hit[i] = false;
+							hitArray[i] = false;
 						}
 					} else {
-						hit[i] = false;
+						hitArray[i] = false;
 					}
 				}
-				String energyStr = "$orange$" + "Energy deposited:  " + vetoE
-						+ " MeV\n# of hits:  " + hits;
+				String eventFeedbackString = "$orange$" + "\nEnergy Deposited: " + vetoEnergy + " MeV\nNumber of Hits: " + hits;
 				int counter = 1;
-				for (int i = 0; i < hit.length; i++) {
-					if (hit[i]) {
-						energyStr += "\nTime #" + counter + ":  " + totalT[i]
-								+ " ns";
+				for (int i = 0; i < hitArray.length; i++) {
+					if (hitArray[i]) {
+						eventFeedbackString = eventFeedbackString + "\nTime n." + counter + ": " + totalTimeArray[i] + " ns";
 					}
 				}
-				feedbackStrings.add(energyStr);
+				feedbackStringList.add(eventFeedbackString);
 			}
 		}
 	}
 
 	/**
-	 * Get the feedback strings for accumulated mode
+	 * Collects the accumulated mode feedback strings.
 	 * 
-	 * Currently unused
-	 * 
-	 * @param feedbackStrings
-	 *            The list of feedback strings
+	 * @param feedbackStringList A list of feedback strings.
 	 */
-	private void accumulatedFeedbackStrings(List<String> feedbackStrings) {
-	}
+	private void accumulatedFeedbackStrings(List<String> feedbackStringList) { }
 	
 	/**
 	 * Returns the line color of the veto.
@@ -517,10 +441,7 @@ public class FullSideViewVeto extends RectangleItem {
 	 * @return true if the veto is an internal upstream veto, false otherwise.
 	 */
 	private boolean isInternalUpstreamVeto() {
-		if (_veto >= GeometricConstants.CRYSTALS + 1 && _veto <= GeometricConstants.CRYSTALS + 4) {
-			return true;
-		}
-		return false;
+		return _veto >= GeometricConstants.CRYSTALS + 1 && _veto <= GeometricConstants.CRYSTALS + 4;
 	}
 
 }
