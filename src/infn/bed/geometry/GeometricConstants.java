@@ -15,6 +15,21 @@ public class GeometricConstants {
 	public static final int BARS = 9;
 	
 	/**
+	 * The number of detector channels.
+	 */
+	public static final int CHANNELS = 18;
+	
+	/**
+	 * The number of detector rows.
+	 */
+	public static final int ROWS = 3;
+	
+	/**
+	 * The number of detector columns.
+	 */
+	public static final int COLUMNS = CHANNELS / ROWS;
+	
+	/**
 	 * The number of crystals.
 	 */
 	public static final int CRYSTALS = 4;
