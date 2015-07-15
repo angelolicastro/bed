@@ -24,6 +24,7 @@ import infn.bed.component.ControlPanel;
 import infn.bed.geometry.GeometricConstants;
 import infn.bed.item.FullSideViewBar;
 import infn.bed.item.FullSideViewVeto;
+import infn.bed.util.DynamicPopulator;
 
 /**
  * Draws the Full Side View, which consists of a set of crystals, a scintillator bar matrix, and a set of vetoes.
@@ -79,7 +80,7 @@ public class FullSideView extends BedView {
 	/**
 	 * An array of bar rectangles.
 	 */
-	private Rectangle2D.Double _barWorldRectangles[];
+	private ArrayList<Rectangle2D.Double> _barWorldRectanglesArrayList;
 
 	/**
 	 * An array of veto rectangles.
@@ -161,7 +162,7 @@ public class FullSideView extends BedView {
 	 */
 	private void setBarWorldRectangles() {
 
-		_barWorldRectangles = new Rectangle2D.Double[GeometricConstants.BARS];
+		_barWorldRectanglesArrayList = new ArrayList<>(GeometricConstants.CHANNELS);
 		_vetoWorldRectanglesArrayList = new ArrayList<>(GeometricConstants.VETOES);
 
 		Rectangle2D.Double worldRectangle = _defaultWorldRectangle;
@@ -175,39 +176,14 @@ public class FullSideView extends BedView {
 
 		double barLeft = 1.5 - (1.5 * boxWidth);
 		double barBottom = 1.5 - boxWidth;
-
-		double x13 = barLeft + boxWidth;
-		double x23 = x13 + boxWidth;
-		double y13 = barBottom + boxWidth;
-		double y23 = y13 + boxWidth;
 		
 		/*
-		 * SCINTILLATOR BAR MATRIX
+		 * DETECTOR MATRIX
 		 */
 		
-		/*
-		 * Row 1
-		 */
-
-		_barWorldRectangles[0] = new Rectangle2D.Double(barLeft, y23, boxWidth, boxHeight);
-		_barWorldRectangles[1] = new Rectangle2D.Double(x13, y23, boxWidth, boxHeight);
-		_barWorldRectangles[2] = new Rectangle2D.Double(x23, y23, boxWidth, boxHeight);
+		Rectangle2D.Double _barWorldRectangle = new Rectangle2D.Double(barLeft, barBottom, 0.375, 0.375);
 		
-		/*
-		 * Row 2
-		 */
-
-		_barWorldRectangles[3] = new Rectangle2D.Double(barLeft, y13, boxWidth,boxHeight);
-		_barWorldRectangles[4] = new Rectangle2D.Double(x13, y13, boxWidth, boxHeight);
-		_barWorldRectangles[5] = new Rectangle2D.Double(x23, y13, boxWidth, boxHeight);
-		
-		/*
-		 * Row 3
-		 */
-
-		_barWorldRectangles[6] = new Rectangle2D.Double(barLeft, barBottom, boxWidth, boxHeight);
-		_barWorldRectangles[7] = new Rectangle2D.Double(x13, barBottom, boxWidth, boxHeight);
-		_barWorldRectangles[8] = new Rectangle2D.Double(x23, barBottom, boxWidth, boxHeight);
+		_barWorldRectanglesArrayList = DynamicPopulator.getDynamicallyPopulatedWorld(_barWorldRectangle);
 
 		/*
 		 * VETOES
@@ -378,8 +354,8 @@ public class FullSideView extends BedView {
 		_beforeDraw = new DrawableAdapter() {
 			@Override
 			public void draw(Graphics g, IContainer container) {
-				for (int bar = 0; bar < GeometricConstants.BARS; bar++) {
-					WorldGraphicsUtilities.drawWorldRectangle(g, container, _barWorldRectangles[bar], _barStyle);
+				for (int bar = 0; bar < _barWorldRectanglesArrayList.size(); bar++) {
+					WorldGraphicsUtilities.drawWorldRectangle(g, container, _barWorldRectanglesArrayList.get(bar), _barStyle);
 				}
 				for (int veto = 0; veto < _vetoWorldRectanglesArrayList.size(); veto++) {
 					WorldGraphicsUtilities.drawWorldRectangle(g, container, _vetoWorldRectanglesArrayList.get(veto), _barStyle);
@@ -410,11 +386,11 @@ public class FullSideView extends BedView {
 	private void addItems() {
 		LogicalLayer detectorLayer = getContainer().getLogicalLayer(_detectorLayerName);
 		
-		_superLayerBars = new FullSideViewBar[GeometricConstants.BARS];
+		_superLayerBars = new FullSideViewBar[GeometricConstants.CHANNELS];
 		_superLayerVetoes = new FullSideViewVeto[GeometricConstants.VETOES];
 
-		for (int bar = 0; bar < GeometricConstants.BARS; bar++) {
-			_superLayerBars[bar] = new FullSideViewBar(detectorLayer, this, _barWorldRectangles[bar], bar);
+		for (int bar = 0; bar < _barWorldRectanglesArrayList.size(); bar++) {
+			_superLayerBars[bar] = new FullSideViewBar(detectorLayer, this, _barWorldRectanglesArrayList.get(bar), bar);
 		}
 		
 		for (int veto = 0; veto < _vetoWorldRectanglesArrayList.size(); veto++) {
@@ -453,8 +429,8 @@ public class FullSideView extends BedView {
 	 */
 	@Override
 	public int getSector(Point2D.Double worldPoint) {
-		for (int bar = 0; bar < GeometricConstants.BARS; bar++) {
-			if (_barWorldRectangles[bar].contains(worldPoint)) {
+		for (int bar = 0; bar < _barWorldRectanglesArrayList.size(); bar++) {
+			if (_barWorldRectanglesArrayList.get(bar).contains(worldPoint)) {
 				// Convert to one-based indexing.
 				return bar + 1;
 			}
