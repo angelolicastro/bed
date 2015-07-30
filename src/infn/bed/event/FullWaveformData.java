@@ -14,102 +14,75 @@ import cnuphys.splot.pdata.DataSetException;
 import cnuphys.splot.pdata.DataSetType;
 
 /**
- * This class handles the reading in of a full waveshape data file. The
- * waveshape is converted in ChargeTimeData.java and is plotted in WavePlot.java
+ * Reads a full-waveform data file.
  * 
- * @author Andy Beiter
- * 
+ * @author Andy Beiter, Angelo Licastro
  */
 public class FullWaveformData implements ILoad {
 
 	/**
-	 * The waveshape from the PMTs
+	 * An ArrayList of PMT (photomultiplier tube) full-waveform data.
 	 */
-	private ArrayList<ArrayList<Short>> channelSamples;
+	private final ArrayList<ArrayList<Short>> channelSampleArrayList;
 
 	/**
-	 * The data set for the plots
+	 * An array of plot data sets.
 	 */
-	private DataSet ds[];
+	private final DataSet[] dataSetArray;
 
 	/**
-	 * Constructor that instantiates the ArrayList and the data set
+	 * Prepares the full-waveform data.
 	 */
 	public FullWaveformData() {
-		channelSamples = new ArrayList<ArrayList<Short>>();
-		ds = new DataSet[34]; // TODO data sets for vetoes too?
+		channelSampleArrayList = new ArrayList<>();
+		dataSetArray = new DataSet[34];
 		for (int i = 0; i < 34; i++) {
-			channelSamples.add(new ArrayList<Short>());
+			channelSampleArrayList.add(new ArrayList<>());
 		}
 		for (int i = 0; i < 34; i++) {
 			try {
-				ds[i] = new DataSet(DataSetType.XYXY, WavePlot.getColumnNames());
+				dataSetArray[i] = new DataSet(DataSetType.XYXY, WavePlot.getColumnNames());
 			} catch (DataSetException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
 
 	/**
-	 * Loads in the full waveshape data from a full waveshape file. Currently
-	 * just checks that the composite data is not null and does not use tag or
-	 * num.
+	 * Loads full-waveform data from a full-waveform data file.
 	 * 
-	 * @param structure
-	 *            The data
-	 * @param tag
-	 *            The tag used to identify the data
-	 * @param num
-	 *            The number used to identify the data
+	 * @param structure An instance of the IEvioStructure object.
+	 * @param tag The tag of the bank.
+	 * @param num The num of the bank.
 	 */
 	@Override
 	public void load(IEvioStructure structure, int tag, int num) {
-		// TODO Auto-generated method stub
 		try {
-			for (int i = 0; i < channelSamples.size(); i++) {
-				channelSamples.get(i).clear();
-			}
-			CompositeData[] comps = structure.getCompositeData();
-			if (comps != null) {
-				for (CompositeData cd : comps) {
-					byte boardNum = cd.getByte();
-					cd.getInt(); // event Num
-					cd.getLong(); // trigger time
-					int numChannels = cd.getNValue(); // number of channels the
-														// event has data for
-					for (int i = 0; i < numChannels; i++) {
-						byte channelNum = cd.getByte(); // number of the channel
-														// the next data set is
-														// for
-						int numSamples = cd.getNValue(); // number of samples
-															// recorded in the
-															// channel
-						for (int j = 0; j < numSamples; j++) {
-							short sample = cd.getShort();
-							channelSamples.get(channelNum).add(sample);
-							ds[channelNum].add((j + 1) * 4, sample);
+			channelSampleArrayList.forEach(ArrayList<Short>::clear);
+			CompositeData[] compositeDataArray = structure.getCompositeData();
+			if (compositeDataArray != null) {
+				for (CompositeData compositeData : compositeDataArray) {
+					int channelCount = compositeData.getNValue();
+					for (int i = 0; i < channelCount; i++) {
+						byte channelNumber = compositeData.getByte();
+						int sampleCount = compositeData.getNValue();
+						for (int j = 0; j < sampleCount; j++) {
+							short sample = compositeData.getShort();
+							channelSampleArrayList.get(channelNumber).add(sample);
+							dataSetArray[channelNumber].add((j + 1) * 4, sample);
 						}
 					}
-					boardNum = cd.getByte();
-					cd.getInt();
-					cd.getLong();
-					numChannels = cd.getNValue(); // number of channels the
-													// event has data for
-					for (int i = 0; i < numChannels; i++) {
-						byte channelNum = cd.getByte(); // number of the channel
-														// the next data set is
-														// for
-						int numSamples = cd.getNValue(); // number of samples
-															// recorded in the
-															// channel
+					byte boardNumber = compositeData.getByte();
+					compositeData.getInt();
+					compositeData.getLong();
+					channelCount = compositeData.getNValue();
+					for (int i = 0; i < channelCount; i++) {
+						byte channelNum = compositeData.getByte();
+						int numSamples = compositeData.getNValue();
 						for (int j = 0; j < numSamples; j++) {
-							short sample = cd.getShort();
-							channelSamples
-									.get((boardNum - 7) * 16 + channelNum).add(
-											sample);
-							ds[(boardNum - 7) * 16 + channelNum].add(
-									(j + 1) * 4, sample);
+							short sample = compositeData.getShort();
+							channelSampleArrayList.get((boardNumber - 7) * 16 + channelNum).add(sample);
+							dataSetArray[(boardNumber - 7) * 16 + channelNum].add((j + 1) * 4, sample);
 						}
 					}
 				}
@@ -120,21 +93,21 @@ public class FullWaveformData implements ILoad {
 	}
 
 	/**
-	 * Gets the array list of array lists of channel samples
+	 * Returns an ArrayList of PMT (photomultiplier tube) full-waveform data.
 	 * 
-	 * @return The samples for each bar/veto
+	 * @return An ArrayList of PMT (photomultiplier tube) full-waveform data.
 	 */
-	public ArrayList<ArrayList<Short>> getChannelSamples() {
-		return channelSamples;
+	public ArrayList<ArrayList<Short>> getChannelSampleArrayList() {
+		return channelSampleArrayList;
 	}
 
 	/**
-	 * Gets the data sets for the plots
+	 * Returns an array of plot data sets.
 	 * 
-	 * @return An array of data sets for plots
+	 * @return An array of plot data sets.
 	 */
-	public DataSet[] getDataSet() {
-		return ds;
+	public DataSet[] getDataSetArray() {
+		return dataSetArray;
 	}
 
 	/**
@@ -144,7 +117,6 @@ public class FullWaveformData implements ILoad {
 	 */
 	@Override
 	public Vector<LundId> uniqueLundIds() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
